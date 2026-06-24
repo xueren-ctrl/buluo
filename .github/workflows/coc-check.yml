@@ -1,0 +1,39 @@
+name: COC 升级检测
+
+on:
+  # 定时触发：每 30 分钟执行一次
+  # 注意：GitHub Actions 的 cron 最小粒度是 1 分钟
+  # 但实际触发可能有 5-10 分钟延迟（GitHub 调度特点）
+  schedule:
+    - cron: '0,30 * * * *'   # 每小时的第 0 分和第 30 分
+
+  # 允许手动触发（方便调试和首次运行）
+  workflow_dispatch:
+
+jobs:
+  check-upgrades:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 安装依赖
+        run: npm install
+
+      - name: 运行升级检测
+        env:
+          COC_API_KEY: ${{ secrets.COC_API_KEY }}
+          COC_PLAYER_TAGS: ${{ secrets.COC_PLAYER_TAGS }}
+          WXPUSHER_APP_TOKEN: ${{ secrets.WXPUSHER_APP_TOKEN }}
+          WXPUSHER_UIDS: ${{ secrets.WXPUSHER_UIDS }}
+          WXPUSHER_TOPIC_IDS: ${{ secrets.WXPUSHER_TOPIC_IDS }}
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+          GIST_ID: ${{ secrets.GIST_ID }}
+        run: node src/index.js --once
