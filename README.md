@@ -201,6 +201,44 @@ docker build -t coc-notifier .
 docker run -d --name coc-notifier --env-file .env coc-notifier
 ```
 
+### 使用 GitHub Actions（无需自己的服务器）
+
+如果你没有自己的服务器，也可以使用 GitHub Actions 定时运行检测。每次运行会检查一次并推送通知（不会持续轮询）。
+
+#### 前置条件
+1. 你的仓库必须是公开的或你有权限使用 GitHub Actions
+2. 需要准备以下 Secrets（在仓库 Settings → Secrets and variables → Actions 中添加）：
+   - `COC_API_KEY`：你的 Clash of Clans API Key
+   - `COC_PLAYER_TAGS`：要监控的玩家 Tag，多个用逗号分隔（如 `#ABC123,#DEF456`）
+   - `WXPUSHER_APP_TOKEN`：WxPusher 应用 Token
+   - `WXPUSHER_UIDS`：接收通知的 UID，多个用逗号分隔
+   - `WXPUSHER_TOPIC_IDS`：（可选）主题 ID，多个用逗号分隔
+   - `GIST_TOKEN`：拥有 `gist` 权限的 GitHub Personal Access Token
+   - `GIST_ID`：用于存储快照的 Gist ID（新建一个公开或私有的 Gist，获取其 ID）
+
+#### 工作流文件
+在仓库根目录创建 `.github/workflows/coc-check.yml`，内容如下：
+
+```yaml
+name: COC 升级检测
+
+on:
+  # 每 30 分钟执行一次（0 分 和 30 分）
+  schedule:
+    - cron: '0,30 * * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  check-upgrades:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+
 ## 监控项目升级
 
 本系统检测的升级类型:
