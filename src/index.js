@@ -2,25 +2,42 @@
  * COC Upgrade Notifier - 主入口
  * 部落冲突升级完成 → 微信推送通知
  *
- * 运行方式: node src/index.js
+ * 运行方式:
+ *   常驻模式: node src/index.js
+ *   单次模式: node src/index.js --once （适合 GitHub Actions / 定时任务）
+ *
  * 需要 Node.js >= 18（内置 fetch）
  */
 
 import { config, validateConfig } from './config.js';
 import { getPlayer, getPlayers, healthCheck } from './coc-client.js';
-import { saveSnapshot, loadSnapshot } from './snapshot.js';
+import { isGistEnabled } from './gist-store.js';
+import { saveSnapshot, loadSnapshot } from './gist-store.js';
 import { detectUpgrades, formatUpgradeText } from './detector.js';
 import { sendUpgradeNotification, sendStartNotification } from './wxpusher.js';
 import { logger } from './logger.js';
+
+// 是否只执行一次（--once 参数）
+const RUN_ONCE = process.argv.includes('--once');
 
 // ===== 启动入口 =====
 
 async function main() {
   console.log('');
   console.log('='.repeat(50));
-  console.log('  COC Upgrade Notifier v1.0.0');
+  console.log('  COC Upgrade Notifier v1.1.0');
   console.log('  部落冲突升级完成 -> 微信推送通知');
   console.log('='.repeat(50));
+  console.log('');
+
+  if (RUN_ONCE) {
+    console.log('  模式: 单次执行 (GitHub Actions / 定时任务)');
+  }
+  if (isGistEnabled()) {
+    console.log('  快照存储: GitHub Gist');
+  } else {
+    console.log('  快照存储: 本地文件');
+  }
   console.log('');
 
   // 1. 验证配置
@@ -52,15 +69,25 @@ async function main() {
     logger.warn('将在下次轮询时重试...');
   }
 
-  // 3. 发送启动通知
-  try {
-    await sendStartNotification();
-    logger.success('启动通知已发送到微信');
-  } catch (error) {
-    logger.warn(`启动通知发送失败: ${error.message}（不影响监控运行）`);
+  // 3. 发送启动通知（仅在常驻模式下发送，避免 Actions 每次启动都推送）
+  if (!RUN_ONCE) {
+    try {
+      await sendStartNotification();
+      logger.success('启动通知已发送到微信');
+    } catch (error) {
+      logger.warn(`启动通知发送失败: ${error.message}（不影响监控运行）`);
+    }
   }
 
-  // 4. 启动轮询
+  // 4. 执行检测
+  if (RUN_ONCE) {
+    // 单次模式：执行一次后退出
+    await pollAllPlayers();
+    logger.info('单次检测完成，程序退出');
+    return;
+  }
+
+  // 常驻模式：设置定时轮询
   const intervalMs = config.poll.intervalMinutes * 60 * 1000;
   logger.info(`开始定时轮询（每 ${config.poll.intervalMinutes} 分钟一次）`);
   console.log('');
@@ -109,7 +136,7 @@ async function pollAllPlayers() {
     const playerName = playerData.name;
 
     // 读取上次快照
-    const prevSnapshot = loadSnapshot(playerTag);
+    const prevSnapshot = await loadSnapshot(playerTag);
 
     // 检测升级
     const upgradeResult = detectUpgrades(playerData, prevSnapshot);
@@ -134,7 +161,7 @@ async function pollAllPlayers() {
     }
 
     // 保存当前快照（无论是否有升级都要保存）
-    saveSnapshot(playerTag, playerData);
+    await saveSnapshot(playerTag, playerData);
   }
 
   logger.info(`--- 轮询结束，共检测到 ${totalUpgrades} 项升级 ---`);
@@ -144,6 +171,6 @@ async function pollAllPlayers() {
 // ===== 启动 =====
 
 main().catch(error => {
-  logger.error(`启动异常: ${error.message}`);
+  console.error(`[致命错误] 启动异常: ${error.message}`);
   process.exit(1);
 });
