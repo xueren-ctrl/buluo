@@ -25,7 +25,7 @@ const RUN_ONCE = process.argv.includes('--once');
 async function main() {
   console.log('');
   console.log('='.repeat(50));
-  console.log('  COC Upgrade Notifier v1.1.0');
+  console.log('  COC Upgrade Notifier v1.2.0');
   console.log('  部落冲突升级完成 -> 微信推送通知');
   console.log('='.repeat(50));
   console.log('');
@@ -36,7 +36,7 @@ async function main() {
   if (isGistEnabled()) {
     console.log('  快照存储: GitHub Gist');
   } else {
-    console.log('  快照存储: 本地文件');
+    console.log('  快照存储: 本地文件（注意: Actions 环境下本地快照不保留）');
   }
   console.log('');
 
@@ -45,28 +45,27 @@ async function main() {
   if (configErrors.length > 0) {
     console.error('[启动失败] 配置错误:');
     configErrors.forEach(err => console.error(`  - ${err}`));
-    console.error('\n请复制 .env.example 为 .env 并填入正确配置');
+    console.error('\n请确认 GitHub Secrets 已正确配置');
     process.exit(1);
   }
 
   logger.info('配置验证通过');
-  logger.info(`监控玩家: ${config.coc.playerTags.join(', ')}`);
-  logger.info(`轮询间隔: ${config.poll.intervalMinutes} 分钟`);
-  logger.info(`推送目标 UID: ${config.wxpusher.uids.join(', ') || '无'}`);
-  logger.info(`推送目标主题: ${config.wxpusher.topicIds.join(', ') || '无'}`);
+  logger.info('监控玩家: ' + config.coc.playerTags.join(', '));
+  logger.info('轮询间隔: ' + config.poll.intervalMinutes + ' 分钟');
+  logger.info('推送目标 UID: ' + (config.wxpusher.uids.join(', ') || '无'));
+  logger.info('推送目标主题: ' + (config.wxpusher.topicIds.join(', ') || '无'));
 
-  // 2. 验证 COC API 连通性
+  // 2. 验证 COC API 连通性（仅警告，不阻塞后续检测）
   logger.info('验证 COC API 连通性...');
   try {
     const isHealthy = await healthCheck();
-    if (!isHealthy) {
-      logger.error('COC API 认证失败，请检查 API Key 和 IP 绑定');
-      process.exit(1);
+    if (isHealthy) {
+      logger.success('COC API 连通性验证通过');
+    } else {
+      logger.warn('COC API 连通性验证失败（可能是 IP 白名单限制），继续执行检测流程...');
     }
-    logger.success('COC API 连通性验证通过');
   } catch (error) {
-    logger.error(`COC API 连接失败: ${error.message}`);
-    logger.warn('将在下次轮询时重试...');
+    logger.warn('COC API 健康检查异常: ' + error.message + '，继续执行检测流程...');
   }
 
   // 3. 发送启动通知（仅在常驻模式下发送，避免 Actions 每次启动都推送）
@@ -75,7 +74,7 @@ async function main() {
       await sendStartNotification();
       logger.success('启动通知已发送到微信');
     } catch (error) {
-      logger.warn(`启动通知发送失败: ${error.message}（不影响监控运行）`);
+      logger.warn('启动通知发送失败: ' + error.message + '（不影响监控运行）');
     }
   }
 
@@ -89,7 +88,7 @@ async function main() {
 
   // 常驻模式：设置定时轮询
   const intervalMs = config.poll.intervalMinutes * 60 * 1000;
-  logger.info(`开始定时轮询（每 ${config.poll.intervalMinutes} 分钟一次）`);
+  logger.info('开始定时轮询（每 ' + config.poll.intervalMinutes + ' 分钟一次）');
   console.log('');
 
   // 立即执行一次
@@ -119,7 +118,7 @@ async function main() {
  */
 async function pollAllPlayers() {
   const now = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
-  logger.info(`--- 开始轮询 [${now}] ---`);
+  logger.info('--- 开始轮询 [' + now + '] ---');
 
   const results = await getPlayers(config.coc.playerTags);
 
@@ -127,7 +126,7 @@ async function pollAllPlayers() {
 
   for (const result of results) {
     if (!result.success) {
-      logger.error(`玩家 ${result.tag} 数据获取失败: ${result.error}`);
+      logger.error('玩家 ' + result.tag + ' 数据获取失败: ' + result.error);
       continue;
     }
 
@@ -142,35 +141,36 @@ async function pollAllPlayers() {
     const upgradeResult = detectUpgrades(playerData, prevSnapshot);
 
     if (upgradeResult.upgrades.length > 0) {
-      logger.success(`${playerName} 检测到 ${upgradeResult.upgrades.length} 项升级!`);
+      logger.success(playerName + ' 检测到 ' + upgradeResult.upgrades.length + ' 项升级!');
       for (const u of upgradeResult.upgrades) {
-        logger.info(`  ${formatUpgradeText(u)}`);
+        logger.info('  ' + formatUpgradeText(u));
       }
 
       // 发送微信推送
       try {
         await sendUpgradeNotification(upgradeResult);
-        logger.success(`已推送 ${playerName} 的升级通知到微信`);
+        logger.success('已推送 ' + playerName + ' 的升级通知到微信');
       } catch (error) {
-        logger.error(`推送 ${playerName} 升级通知失败: ${error.message}`);
+        logger.error('推送 ' + playerName + ' 升级通知失败: ' + error.message);
       }
 
       totalUpgrades += upgradeResult.upgrades.length;
     } else {
-      logger.info(`${playerName} 暂无新升级`);
+      logger.info(playerName + ' 暂无新升级');
     }
 
     // 保存当前快照（无论是否有升级都要保存）
     await saveSnapshot(playerTag, playerData);
   }
 
-  logger.info(`--- 轮询结束，共检测到 ${totalUpgrades} 项升级 ---`);
+  logger.info('--- 轮询结束，共检测到 ' + totalUpgrades + ' 项升级 ---');
   console.log('');
 }
 
 // ===== 启动 =====
 
 main().catch(error => {
-  console.error(`[致命错误] 启动异常: ${error.message}`);
+  console.error('[致命错误] 启动异常: ' + error.message);
+  console.error(error.stack);
   process.exit(1);
 });

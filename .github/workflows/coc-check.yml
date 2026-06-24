@@ -22,10 +22,28 @@ jobs:
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: 安装依赖
-        run: npm install
+        run: npm install --prefer-offline || npm install
+
+      - name: 验证环境变量
+        env:
+          COC_API_KEY: ${{ secrets.COC_API_KEY }}
+          COC_PLAYER_TAGS: ${{ secrets.COC_PLAYER_TAGS }}
+          WXPUSHER_APP_TOKEN: ${{ secrets.WXPUSHER_APP_TOKEN }}
+          WXPUSHER_UIDS: ${{ secrets.WXPUSHER_UIDS }}
+        run: |
+          MISSING=""
+          [ -z "$COC_API_KEY" ] && MISSING="${MISSING}COc_API_KEY "
+          [ -z "$COC_PLAYER_TAGS" ] && MISSING="${MISSING}COC_PLAYER_TAGS "
+          [ -z "$WXPUSHER_APP_TOKEN" ] && MISSING="${MISSING}WXPUSHER_APP_TOKEN "
+          [ -z "$WXPUSHER_UIDS" ] && MISSING="${MISSING}WXPUSHER_UIDS "
+          if [ -n "$MISSING" ]; then
+            echo "::error::缺少必需的 Secrets: $MISSING"
+            exit 1
+          fi
+          echo "所有必需的环境变量已配置 ✓"
 
       - name: 运行升级检测
         env:
