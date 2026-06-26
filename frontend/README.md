@@ -1,6 +1,6 @@
 # 部落冲突升级助手 PWA
 
-基于 Next.js 14 + TypeScript + TailwindCSS + next-pwa 开发的部落冲突升级追踪 PWA 应用。
+基于 Next.js 14 + TypeScript + TailwindCSS 开发的部落冲突升级追踪应用。
 
 ## 功能特性
 
@@ -47,7 +47,7 @@ npm run build
 - **框架**: Next.js 14 (App Router)
 - **语言**: TypeScript
 - **样式**: TailwindCSS
-- **PWA**: next-pwa + Workbox
+- **PWA**: 手动 Service Worker + Workbox (Static Export)
 - **存储**: IndexedDB
 - **通知**: Notification API
 - **部署**: Cloudflare Pages / Vercel
