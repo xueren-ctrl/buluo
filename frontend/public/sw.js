@@ -1,31 +1,39 @@
 /**
- * Service Worker — Cache assets for offline PWA
- * Uses CacheFirst for static assets, NetworkFirst for API calls
+ * 增强版 Service Worker
+ * 支持 Cloudflare Pages + Next.js static export
+ * 包含：离线缓存、后台通知、Push API、Navigation fallback
  */
-const CACHE_NAME = 'coc-upgrade-assistant-v2';
+
+const CACHE_NAME = 'coc-upgrade-assistant-v3';
+const DATA_CACHE_NAME = 'coc-data-cache-v3';
+
+// 静态资源（离线优先缓存）
 const STATIC_ASSETS = [
   '/',
+  '/panel/',
   '/manifest.json',
   '/icons/icon-192.svg',
   '/icons/icon-512.svg',
   '/loading.html',
 ];
 
-// ---------- Install ----------
+// ========== Install ==========
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(STATIC_ASSETS))
+      .catch(() => {})
   );
   self.skipWaiting();
 });
 
-// ---------- Activate ----------
+// ========== Activate ==========
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) =>
       Promise.all(
         names
-          .filter((n) => n !== CACHE_NAME)
+          .filter((n) => n !== CACHE_NAME && n !== DATA_CACHE_NAME)
           .map((n) => caches.delete(n))
       )
     )
@@ -33,17 +41,24 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// ---------- Fetch ----------
+// ========== Fetch ==========
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  const url = new URL(request.url);
 
-  // API calls: NetworkFirst
-  if (request.url.includes('/api/')) {
+  // 1. Navigation requests → NetworkFirst, fallback to cached page
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirstWithFallback(request));
+    return;
+  }
+
+  // 2. API requests → NetworkFirst, fallback to cache
+  if (url.pathname.startsWith('/api/') || url.pathname.includes('/api/')) {
     event.respondWith(
       fetch(request)
         .then((res) => {
           const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          caches.open(DATA_CACHE_NAME).then((cache) => cache.put(request, clone));
           return res;
         })
         .catch(() => caches.match(request))
@@ -51,7 +66,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets: CacheFirst
+  // 3. Static assets → CacheFirst
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
@@ -62,7 +77,7 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       }).catch(() => {
-        // Offline fallback for navigation requests
+        // 尝试 fallback 到首页（SPA 模式）
         if (request.destination === 'document') {
           return caches.match('/');
         }
@@ -71,56 +86,83 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// ---------- Background Sync ----------
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-upgrades') {
-    event.waitUntil(syncUpgrades());
-  }
-});
-
-async function syncUpgrades() {
-  // If backend is available, re-fetch upgrades
+// ========== Network First with Fallback ==========
+async function networkFirstWithFallback(request) {
   try {
-    const clients = await self.clients.matchAll();
-    for (const client of clients) {
-      await client.postMessage({ type: 'SYNC_TRIGGERED' });
+    const response = await fetch(request);
+    // 仅缓存 200 响应
+    if (response.status === 200) {
+      const clone = response.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
     }
-  } catch (e) {
-    // Silent fail
+    return response;
+  } catch {
+    // 离线 → 尝试匹配页面缓存
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    // 再尝试首页 fallback
+    return caches.match('/');
   }
 }
 
-// ---------- Push Notifications ----------
+// ========== Push Notifications ==========
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || '🏰 升级完成通知';
+  let data = { title: '🏰 CoC 升级助手', body: '有新的升级完成通知！' };
+  try {
+    data = event.data ? event.data.json() : data;
+  } catch {
+    // Plain text push
+    data.body = event.data?.text() || data.body;
+  }
+
   const options = {
-    body: data.body || '你的某个建筑/法术升级已完成了!',
+    body: data.body,
     icon: '/icons/icon-192.svg',
     badge: '/icons/icon-192.svg',
     vibrate: [200, 100, 200],
     data: {
       url: data.url || '/',
       createdAt: Date.now(),
+      upgradeItem: data.upgradeItem || null,
     },
     actions: [
-      { action: 'view', title: '查看' },
+      { action: 'view', title: '查看升级' },
       { action: 'dismiss', title: '忽略' },
     ],
+    requireInteraction: true,
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
 });
 
+// ========== Notification Click ==========
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+
   if (event.action === 'view') {
+    const url = event.notification.data?.url || '/';
     event.waitUntil(
-      self.clients.openWindow(event.notification.data.url || '/')
+      self.clients.openWindow(url)
     );
   }
 });
 
-self.addEventListener('notificationclose', (event) => {
-  // Track dismissed notifications if needed
+// ========== Background Sync ==========
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-check-upgrades') {
+    event.waitUntil(checkUpgradeCompletion());
+  }
 });
+
+async function checkUpgradeCompletion() {
+  try {
+    const clients = await self.clients.matchAll();
+    for (const client of clients) {
+      await client.postMessage({ type: 'BACKGROUND_SYNC_CHECK' });
+    }
+  } catch (e) {
+    // Silent fail
+  }
+}

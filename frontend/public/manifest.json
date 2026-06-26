@@ -1,25 +1,45 @@
 {
   "name": "部落冲突升级助手",
-  "short_name": "升级助手",
-  "description": "上传 CoC 游戏 JSON，自动追踪升级进度，支持离线使用和消息提醒",
-  "start_url": "/panel",
+  "short_name": "CoC助手",
+  "description": "上传 CoC 游戏 JSON，自动追踪升级进度，升级完成时本地通知提醒",
+  "start_url": "/panel/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#6366f1",
   "orientation": "portrait-primary",
+  "background_color": "#020617",
+  "theme_color": "#6366f1",
   "categories": ["games", "utilities"],
   "icons": [
     {
       "src": "/icons/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "升级面板",
+      "url": "/panel/",
+      "description": "查看升级进度面板"
     }
   ],
   "screenshots": [],

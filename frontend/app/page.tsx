@@ -45,6 +45,7 @@ import {
   type RawUpgradeRecord,
 } from "@/lib/indexeddb";
 import { getUpgradeDisplay, ITEM_CATEGORY_LABELS, CATEGORY_BG_COLORS } from "@/lib/coc-assets";
+import { listenVisibilityChange } from "@/lib/notification-system";
 
 /* ================================================================
    首页 — "部落冲突升级助手" PWA 应用级体验
@@ -125,6 +126,19 @@ export default function HomePage() {
       // 注册 Service Worker
       registerSW().then((sw) => {
         if (sw) console.log("[PWA] Service Worker 已注册");
+      });
+
+      // 监听页面可见性变化 → 自动恢复通知检测
+      listenVisibilityChange(() => {
+        // 页面从后台恢复时，重新调度通知
+        if (upgrades.length > 0) {
+          scheduleCompletionNotifications(upgrades.map((u) => ({
+            item_name: u.item_name,
+            item_level: u.item_level,
+            finish_time: u.finish_time,
+            category: u.category,
+          })));
+        }
       });
     }
 
@@ -710,6 +724,7 @@ const DEFAULT_NOTIFY_STATUS: NotifyStatus = {
   browserNotifGranted: false,
   pwaPushAvailable: false,
   isInstalled: false,
+  swRegistered: false,
 };
 
 function NotifySettingsPanel({

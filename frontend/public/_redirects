@@ -1,0 +1,3 @@
+# Cloudflare Pages SPA 路由回退
+# 所有未知路由回退到 index.html
+/*  /index.html 200

@@ -1,6 +1,7 @@
 /**
- * 通知管理系统
- * 支持浏览器 Notification / PWA 推送两种通道
+ * 增强版通知管理系统
+ * 支持：浏览器通知 / PWA Push / Service Worker 后台推送
+ * 支持：离线缓存 / visibilitychange / 后台同步
  */
 
 import type { NotifyConfig } from "@/lib/indexeddb";
@@ -55,12 +56,40 @@ export async function registerSW(): Promise<ServiceWorkerRegistration | null> {
   if (!("serviceWorker" in navigator)) return null;
 
   try {
-    const reg = await navigator.serviceWorker.register("/sw.js", {
+    // 等待 SW 控制
+    const reg = await navigator.serviceWorker.ready;
+
+    // 如果已经有活跃的 SW，尝试重新注册
+    const existing = await navigator.serviceWorker.getRegistration('/');
+    if (existing && existing.active) {
+      return existing;
+    }
+
+    const newReg = await navigator.serviceWorker.register("/sw.js", {
       scope: "/",
     });
-    return reg;
-  } catch {
-    console.warn("[通知系统] Service Worker 注册失败");
+
+    // 监听 SW 状态变化
+    if (newReg.installing) {
+      newReg.installing.addEventListener('statechange', (e) => {
+        const sw = (e.target as ServiceWorker);
+        if (sw.state === 'activated') {
+          console.log("[PWA] Service Worker 已激活");
+          // SW 激活后注册 Periodic Sync
+          if ('periodicSync' in newReg) {
+            (newReg as any).periodicSync.register('sync-check-upgrades', {
+              minInterval: 15 * 60 * 1000, // 15 分钟
+            }).catch(() => {
+              console.warn("[PWA] Periodic Sync 不可用");
+            });
+          }
+        }
+      });
+    }
+
+    return newReg;
+  } catch (err) {
+    console.warn("[通知系统] Service Worker 注册失败:", err);
     return null;
   }
 }
@@ -74,13 +103,13 @@ export async function subscribePwaPush(): Promise<PushSubscription | null> {
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToArrayBuffer(
-        // 这里用 VAPID 公钥占位，实际部署时替换为你的真实密钥
         "BEl62iUYgUWxrfhEC3MufDtTOcCfJLuQXnYFFwfKGv9iCk6Sm1OUiOnXoE4tUVg66qlAyyo3jmENDiQqDDKbkac"
       ),
     });
+    console.log("[PWA] 推送订阅成功");
     return sub;
-  } catch {
-    console.warn("[通知系统] PWA 推送订阅失败");
+  } catch (err) {
+    console.warn("[通知系统] PWA 推送订阅失败:", err);
     return null;
   }
 }
@@ -120,7 +149,18 @@ export async function scheduleCompletionNotifications(upgrades: Array<{
   }
 }
 
-// ── 实用函数: Base64 → Uint8Array ──────────
+// ── 监听页面可见性变化 ────────────────────
+export function listenVisibilityChange(callback: () => void): void {
+  if (typeof document === 'undefined') return;
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      callback();
+    }
+  });
+}
+
+// ── 实用函数: Base64 → ArrayBuffer ───────
 function urlBase64ToArrayBuffer(base64String: string): ArrayBuffer {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -138,6 +178,7 @@ export interface NotifyStatus {
   browserNotifGranted: boolean;
   pwaPushAvailable: boolean;
   isInstalled: boolean;
+  swRegistered: boolean;
 }
 
 export function detectNotifyStatus(): NotifyStatus {
@@ -146,5 +187,6 @@ export function detectNotifyStatus(): NotifyStatus {
     browserNotifGranted: "Notification" in window ? Notification.permission === "granted" : false,
     pwaPushAvailable: "serviceWorker" in navigator && "PushManager" in window,
     isInstalled: "standalone" in window.navigator || (window.matchMedia("(display-mode: standalone)").matches),
+    swRegistered: "serviceWorker" in navigator,
   };
 }
