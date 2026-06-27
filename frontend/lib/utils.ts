@@ -125,8 +125,8 @@ export function getProgressBarPercent(finishTime: string, timerSeconds: number |
  */
 export function getZhName(category: string, dataId: number | null, level: number): string {
   if (dataId != null) {
-    const name = getItemNameById(dataId);
-    if (name) return `${name} Lv${level}`;
+    const info = getItemNameById(category, dataId);
+    if (info) return `${info.zh} Lv${level}`;
   }
 
   const catLabel = ITEM_CATEGORY_LABELS[category] || category;
