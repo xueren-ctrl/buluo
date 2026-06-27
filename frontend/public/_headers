@@ -1,22 +1,26 @@
 /*
- * Cloudflare Pages 兼容配置
- * 安全头 + 缓存控制
- */
-/*
-X-Frame-Options: SAMEORIGIN
-X-Content-Type-Options: nosniff
-X-XSS-Protection: 1; mode=block
-Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
 
 /sw.js
-Cache-Control: public, max-age=0, must-revalidate
-Service-Worker-Allowed: /
+  Cache-Control: no-cache, no-store, must-revalidate
+  Service-Worker-Allowed: /
 
 /manifest.json
-Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: no-cache, must-revalidate
 
-/icons/*.svg
-Cache-Control: public, max-age=31536000, immutable
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
 
-/fonts/*
-Cache-Control: public, max-age=31536000, immutable
+/icons/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/workbox-*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/worker-*.js
+  Cache-Control: public, max-age=31536000, immutable

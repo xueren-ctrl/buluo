@@ -1,45 +1,58 @@
 {
+  "id": "/",
   "name": "部落冲突升级助手",
-  "short_name": "CoC助手",
-  "description": "上传 CoC 游戏 JSON，自动追踪升级进度，升级完成时本地通知提醒",
-  "start_url": "/panel/",
+  "short_name": "CoC 升级",
+  "description": "上传 CoC 游戏 JSON，自动追踪升级进度，支持离线使用、完成提醒和夜间免打扰",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#020617",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#0f172a",
   "theme_color": "#6366f1",
-  "categories": ["games", "utilities"],
+  "orientation": "portrait-primary",
+  "dir": "ltr",
+  "lang": "zh-CN",
+  "categories": ["games", "utilities", "productivity"],
   "icons": [
     {
-      "src": "/icons/icon-192.svg",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.svg",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192.svg",
+      "src": "/icons/icon-maskable-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/icon-512.svg",
+      "src": "/icons/icon-maskable-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
-      "name": "升级面板",
-      "url": "/panel/",
-      "description": "查看升级进度面板"
+      "name": "上传 JSON",
+      "short_name": "上传",
+      "description": "粘贴或上传 CoC 游戏 JSON",
+      "url": "/?action=upload",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "升级列表",
+      "short_name": "列表",
+      "description": "查看当前升级队列",
+      "url": "/?view=list",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
   ],
   "screenshots": [],

@@ -24,6 +24,7 @@ export interface UploadResponse {
   player_info?: PlayerInfo | null;
   last_upload_at?: string | null;
   diff?: DataDiff | null;
+  village?: VillageSnapshot;
 }
 
 /**
@@ -56,7 +57,7 @@ export interface IdleTimes {
   lab_idle_at: string | null;
   builder_busy_count: number;
   lab_busy_count: number;
-  builder_total?: number;
+  builder_total?: number | null;
 }
 
 /**
@@ -273,3 +274,35 @@ export function getUrgencyColor(urgency: string): string {
     default:        return "from-green-500/20 to-green-600/5 border-green-500/40";
   }
 }
+
+// ── 村庄快照（全量解析，含 timer=0 的项）────────
+
+/**
+ * 村庄中的单个项目（建筑/法术/英雄/兵种/宠物/装备等）
+ * - currentLevel 为当前已达到的等级
+ * - 若 isUpgrading=true，则 targetLevel = currentLevel + 1
+ */
+export interface VillageItem {
+  scId: number;
+  category: string;
+  currentLevel: number;
+  isUpgrading: boolean;
+  targetLevel?: number;
+  timerSeconds?: number;
+  finishTime?: string;
+}
+
+/**
+ * 村庄快照 — 某一时刻整个村庄的状态
+ * - items 包含所有分类的所有条目（含 timer=0 的）
+ * - 用于基地分析、评分、推荐算法
+ */
+export interface VillageSnapshot {
+  capturedAt: string;
+  townHallLevel: number;
+  builderCount: number;
+  playerTag: string;
+  playerName: string;
+  items: VillageItem[];
+}
+

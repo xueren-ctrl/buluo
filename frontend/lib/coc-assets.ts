@@ -1,416 +1,399 @@
 /**
  * ============================================
- * 部落冲突 (Clash of Clans) 完整中文资源映射系统
+ * 部落冲突 (Clash of Clans) 中文资产映射库
  * ============================================
- * 覆盖：建筑、法术、英雄、宠物、装备、兵种、攻城机器、陷阱
- * 数据来源：基于 CoC 官方数据库和 SC ID 规则
- * 
- * SC ID 规则：
- * - 建筑 (buildings): 1000xxxx
- * - 法术 (spells): 26000xxx
- * - 英雄 (heroes): 28000xxx
- * - 宠物 (pets): 73000xxx
- * - 装备 (equipment): 106000xxx
- * - 助力 (helpers): 124000xxx
- * - 兵种 (units): 4000xxx
- * - 攻城机器 (siege_machines): 27000xxx
- * - 陷阱 (traps): 25000xxx
+ * ID 真相来源：backend/app/assets/building_map.json（已用真实游戏 JSON 验证）
+ *
+ * SC ID 位数规则（验证后）：
+ * - buildings:      1000000+   (7 位, 1000000~1000093)
+ * - spells:         26000000+  (8 位)
+ * - heroes:         28000000+  (8 位)
+ * - pets:           73000000+  (8 位)
+ * - equipment:      106000000+ (9 位)
+ * - helpers:        124000000+ (9 位)
+ * - units:          4000000+   (7 位)
+ * - siege_machines: 4000051+   (与 units 共享 4000xxx 空间)
+ * - buildings2:     1000033+   (夜世界, 与 buildings 共享 1000xxx)
+ * - heroes2:        28000003+  (夜世界英雄)
+ * - units2:         4000031+   (夜世界兵种)
  */
 
-// ============================================
-// 建筑映射 (buildings) - SC ID 1000xxxx
-// ============================================
-export const BUILDING_MAP: Record<number, {
-  zh: string;
-  en: string;
-  type: "building";
-  color: string;
-  icon: string;
-}> = {
-  // Town Hall
-  1000001: { zh: "市政厅", en: "Town Hall", type: "building", color: "orange", icon: "🏛️" },
-  // Builders Workshop
-  1000002: { zh: "建筑工人小屋", en: "Builders Workshop", type: "building", color: "orange", icon: "🏗️" },
-  // Collector
-  1000003: { zh: "金矿", en: "Gold Mine", type: "building", color: "orange", icon: "⛏️" },
-  // Collector (Elixir)
-  1000004: { zh: "圣水瓶", en: "Elixir Collector", type: "building", color: "orange", icon: "💧" },
-  // Storage (Gold)
-  1000005: { zh: "金库", en: "Gold Storage", type: "building", color: "orange", icon: "🏦" },
-  // Storage (Elixir)
-  1000006: { zh: "圣水存储", en: "Elixir Storage", type: "building", color: "orange", icon: "🏺" },
-  // Defense - Cannon
-  1000007: { zh: "迫击炮", en: "Mortar", type: "building", color: "orange", icon: "💥" },
-  // Defense - Archer Tower
-  1000008: { zh: "箭塔", en: "Archer Tower", type: "building", color: "orange", icon: "🏹" },
-  // Defense - Tesla
-  1000009: { zh: "特斯拉电塔", en: "Tesla", type: "building", color: "orange", icon: "⚡" },
-  // Defense - Mortar
-  1000010: { zh: "迫击炮", en: "Mortar", type: "building", color: "orange", icon: "💥" },
-  // Defense - Cannon (low TH)
-  1000011: { zh: "加农炮", en: "Cannon", type: "building", color: "orange", icon: "💣" },
-  // Defense - Archer Tower (low TH)
-  1000012: { zh: "箭塔", en: "Archer Tower", type: "building", color: "orange", icon: "🏹" },
-  // Defense - Tower (Tesla)
-  1000013: { zh: "地狱塔", en: "Inferno Tower", type: "building", color: "orange", icon: "🔥" },
-  // Defense - Wall
-  1000014: { zh: "城墙", en: "Wall", type: "building", color: "orange", icon: "🧱" },
-  // Defense - Wizard Tower
-  1000015: { zh: "法师塔", en: "Wizard Tower", type: "building", color: "orange", icon: "🔮" },
-  // Defense - Air Defense
-  1000016: { zh: "空气防御", en: "Air Defense", type: "building", color: "orange", icon: "🛡️" },
-  // Defense - Hidden Tesla
-  1000017: { zh: "隐形电塔", en: "Hidden Tesla", type: "building", color: "orange", icon: "⚡" },
-  // Defense - Bomb Tower
-  1000018: { zh: "炸弹塔", en: "Bomb Tower", type: "building", color: "orange", icon: "💣" },
-  // Defense - Eagle Artifact
-  1000019: { zh: "鹰龙火炮", en: "Eagle Artifact", type: "building", color: "orange", icon: "🦅" },
-  // Defense - Scattershot
-  1000020: { zh: "散弹枪", en: "Scattershot", type: "building", color: "orange", icon: "🔫" },
-  // Defense - Monolith
-  1000021: { zh: "巨石炮", en: "Monolith", type: "building", color: "orange", icon: "🗿" },
-  // Clan Castle
-  1000022: { zh: "部落城堡", en: "Clan Castle", type: "building", color: "orange", icon: "🏰" },
-  // Laboratory
-  1000023: { zh: "实验室", en: "Laboratory", type: "building", color: "orange", icon: "🔬" },
-  // Heroes' Hut (TH16+)
-  1000024: { zh: "英雄殿", en: "Heroes' Hut", type: "building", color: "orange", icon: "⚔️" },
-  // Pet House
-  1000025: { zh: "宠物小屋", en: "Pet House", type: "building", color: "orange", icon: "🐾" },
-  // War Camp (TH15+)
-  1000026: { zh: "战争营地", en: "War Camp", type: "building", color: "orange", icon: "⚔️" },
-  // Siege Workshop (TH14+)
-  1000027: { zh: "攻城营", en: "Siege Workshop", type: "building", color: "orange", icon: "🏗️" },
-  // Treasure Vault (TH16+)
-  1000028: { zh: "宝库", en: "Treasure Vault", type: "building", color: "orange", icon: "💎" },
-  // Army Camp
-  1000029: { zh: "兵营", en: "Army Camp", type: "building", color: "orange", icon: "⛺" },
-  // Elixir Storage (updated name)
-  1000030: { zh: "圣水池", en: "Elixir Pump", type: "building", color: "orange", icon: "💧" },
-  // Gold Storage (updated name)
-  1000031: { zh: "金币泵", en: "Gold Pump", type: "building", color: "orange", icon: "⛏️" },
-};
+export type ItemColor =
+  | "amber" | "indigo" | "yellow" | "emerald" | "violet"
+  | "cyan" | "rose" | "slate" | "orange" | "teal" | "zinc" | "red" | "gray";
 
-// ============================================
-// 法术映射 (spells) - SC ID 26000xxx
-// ============================================
-export const SPELL_MAP: Record<number, {
-  zh: string;
-  en: string;
-  type: "spell";
-  color: string;
-  icon: string;
-}> = {
-  2600001: { zh: "力量药水", en: "Strength Potion", type: "spell", color: "blue", icon: "💪" },
-  2600002: { zh: "超力药水", en: "Super Strength Potion", type: "spell", color: "blue", icon: "⚡" },
-  2600003: { zh: "移速药水", en: "Speed Potion", type: "spell", color: "blue", icon: "💨" },
-  2600004: { zh: "超级移速药水", en: "Super Speed Potion", type: "spell", color: "blue", icon: "🌟" },
-  2600005: { zh: "治疗术", en: "Heal", type: "spell", color: "blue", icon: "💚" },
-  2600006: { zh: "狂暴术", en: "Rage", type: "spell", color: "blue", icon: "😡" },
-  2600007: { zh: "冰冻术", en: "Freeze", type: "spell", color: "blue", icon: "❄️" },
-  2600008: { zh: "隐身术", en: "Invisibility", type: "spell", color: "blue", icon: "👻" },
-  2600009: { zh: "剧毒术", en: "Poison", type: "spell", color: "blue", icon: "☠️" },
-  2600010: { zh: "跃迁术", en: "Jump", type: "spell", color: "blue", icon: "🦘" },
-};
+export type Rarity = "common" | "rare" | "epic" | "legendary";
 
-// ============================================
-// 英雄映射 (heroes) - SC ID 28000xxx
-// ============================================
-export const HERO_MAP: Record<number, {
-  zh: string;
-  en: string;
-  type: "hero";
-  color: string;
-  icon: string;
-}> = {
-  2800001: { zh: "野蛮人之王", en: "Barbarian King", type: "hero", color: "gold", icon: "👑" },
-  2800002: { zh: "弓箭女皇", en: "Archer Queen", type: "hero", color: "gold", icon: "👸" },
-  2800003: { zh: "巨魔", en: "Grand Warden", type: "hero", color: "gold", icon: "🧙" },
-  2800004: { zh: "飞盾战神", en: "Wall Wrecker", type: "hero", color: "gold", icon: "🛡️" },
-  2800005: { zh: "攻城机器人", en: "Battle Machine", type: "hero", color: "gold", icon: "🤖" },
-  2800006: { zh: "枭雄", en: "Slayer", type: "hero", color: "gold", icon: "⚔️" },
-  2800007: { zh: "野人王", en: "Golden Chieftain", type: "hero", color: "gold", icon: "🌟" },
-};
-
-// ============================================
-// 宠物映射 (pets) - SC ID 73000xxx
-// ============================================
-export const PET_MAP: Record<number, {
-  zh: string;
-  en: string;
-  type: "pet";
-  color: string;
-  icon: string;
-}> = {
-  7300001: { zh: "帕拉狗骑士", en: "Electro Owl", type: "pet", color: "green", icon: "🦉" },
-  7300002: { zh: "猎鹰", en: "Falcon", type: "pet", color: "green", icon: "🦅" },
-  7300003: { zh: "獠牙狮鹫", en: "Ravager", type: "pet", color: "green", icon: "🦁" },
-  7300004: { zh: "雪鹰", en: "Snow Leopard", type: "pet", color: "green", icon: "🐆" },
-  7300005: { zh: "幼龙", en: "Unicorn", type: "pet", color: "green", icon: "🦄" },
-  7300006: { zh: "战狼", en: "Kitty", type: "pet", color: "green", icon: "🐱" },
-  7300007: { zh: "奇美拉", en: "Mighty Yak", type: "pet", color: "green", icon: "🐂" },
-  7300008: { zh: "神牛", en: "Diggy", type: "pet", color: "green", icon: "🐕" },
-};
-
-// ============================================
-// 装备映射 (equipment) - SC ID 106000xxx
-// ============================================
-export const EQUIPMENT_MAP: Record<number, {
-  zh: string;
-  en: string;
-  type: "equipment";
-  color: string;
-  icon: string;
-}> = {
-  // Hero Equipment
-  1060001: { zh: "野蛮人拳头", en: "Barbarian Face", type: "equipment", color: "purple", icon: "👊" },
-  1060002: { zh: "弓箭女皇冠冕", en: "Archer Crown", type: "equipment", color: "purple", icon: "👑" },
-  1060003: { zh: "生命法杖", en: "Staff of Healing", type: "equipment", color: "purple", icon: "🪄" },
-  1060004: { zh: "闪电徽记", en: "Lightning Logo", type: "equipment", color: "purple", icon: "⚡" },
-  1060005: { zh: "狂伤爪", en: "Claws of Damage", type: "equipment", color: "purple", icon: "🐾" },
-  1060006: { zh: "护身符", en: "Charms of Tankiness", type: "equipment", color: "purple", icon: "🧿" },
-  1060007: { zh: "战鹰之锚", en: "Anchor of the Eagle", type: "equipment", color: "purple", icon: "⚓" },
-  1060008: { zh: "雷霆面具", en: "Mask of Torment", type: "equipment", color: "purple", icon: "🎭" },
-  1060009: { zh: "火焰披风", en: "Cloak of Flame", type: "equipment", color: "purple", icon: "🔥" },
-  // Lab Equipment
-  1060010: { zh: "地震之刃", en: "Blade of Doom", type: "equipment", color: "purple", icon: "🗡️" },
-  1060011: { zh: "英雄药剂背包", en: "Heroic Backpack", type: "equipment", color: "purple", icon: "🎒" },
-  1060012: { zh: "猛士肩甲", en: "Shoulderpads of Might", type: "equipment", color: "purple", icon: "🛡️" },
-  1060013: { zh: "治疗宝珠", en: "Healing Orb", type: "equipment", color: "purple", icon: "💚" },
-  1060014: { zh: "爆炸箭袋", en: "Explosive Quiver", type: "equipment", color: "purple", icon: "🏹" },
-  1060015: { zh: "野性头盔", en: "Wild Helm", type: "equipment", color: "purple", icon: "🪖" },
-  1060016: { zh: "战争节律器", en: "War Rhythmer", type: "equipment", color: "purple", icon: "🥁" },
-};
-
-// ============================================
-// 兵种映射 (units) - SC ID 4000xxx
-// ============================================
-export const UNIT_MAP: Record<number, {
-  zh: string;
-  en: string;
-  type: "unit";
-  color: string;
-  icon: string;
-}> = {
-  4000001: { zh: "野蛮人", en: "Barbarian", type: "unit", color: "blue", icon: "👤" },
-  4000002: { zh: "弓箭手", en: "Archer", type: "unit", color: "blue", icon: "🏹" },
-  4000003: { zh: "巨人", en: "Giant", type: "unit", color: "blue", icon: "👊" },
-  4000004: { zh: "哥布林", en: "Goblin", type: "unit", color: "blue", icon: "👺" },
-  4000005: { zh: "法师", en: "Wizard", type: "unit", color: "blue", icon: "🔮" },
-  4000006: { zh: "飞龙宝宝", en: "Baby Dragon", type: "unit", color: "blue", icon: "🐉" },
-  4000007: { zh: "皮卡超人", en: "P.E.K.K.A", type: "unit", color: "blue", icon: "🤖" },
-  4000008: { zh: "气球宝宝", en: "Balloon", type: "unit", color: "blue", icon: "🎈" },
-  4000009: { zh: "地刺", en: "Ground Glove", type: "unit", color: "blue", icon: "🧤" },
-  4000010: { zh: "猎人", en: "Hunter", type: "unit", color: "blue", icon: "🏹" },
-};
-
-// ============================================
-// 攻城机器映射 (siege_machines) - SC ID 27000xxx
-// ============================================
-export const SIEGE_MAP: Record<number, {
-  zh: string;
-  en: string;
-  type: "siege";
-  color: string;
-  icon: string;
-}> = {
-  2700001: { zh: "攻城训练营", en: "Siege Battering Ram", type: "siege", color: "cyan", icon: "🏗️" },
-  2700002: { zh: "攻城投石车", en: "Stone Slammer", type: "siege", color: "cyan", icon: "🪨" },
-  2700003: { zh: "攻城飞艇", en: "Logic Engine", type: "siege", color: "cyan", icon: "🚀" },
-  2700004: { zh: "攻城机甲", en: "Log Launcher", type: "siege", color: "cyan", icon: "🪵" },
-};
-
-// ============================================
-// 助力映射 (helpers) - SC ID 124000xxx
-// ============================================
-export const HELPER_MAP: Record<number, {
-  zh: string;
-  en: string;
-  type: "helper";
-  color: string;
-  icon: string;
-}> = {
-  1240001: { zh: "建筑大师助手", en: "Master Builder Helper", type: "helper", color: "teal", icon: "🔧" },
-  1240002: { zh: "魔法助手", en: "Magic Helper", type: "helper", color: "teal", icon: "✨" },
-};
-
-// ============================================
-// 陷阱映射 (traps) - SC ID 25000xxx
-// ============================================
-export const TRAP_MAP: Record<number, {
-  zh: string;
-  en: string;
-  type: "trap";
-  color: string;
-  icon: string;
-}> = {
-  2500001: { zh: "弹簧陷阱", en: "Spring Trap", type: "trap", color: "red", icon: "🔩" },
-  2500002: { zh: "空气炸弹", en: "Air Bomb", type: "trap", color: "red", icon: "💥" },
-  2500003: { zh: "巨型炸弹", en: "Giant Bomb", type: "trap", color: "red", icon: "💣" },
-};
-
-// ============================================
-// 复合映射 (用于快速查找)
-// ============================================
-export const ITEM_MAP: Record<number, {
+export interface AssetInfo {
   zh: string;
   en: string;
   type: string;
-  color: string;
+  color: ItemColor;
   icon: string;
-}> = {
-  ...BUILDING_MAP,
-  ...SPELL_MAP,
-  ...HERO_MAP,
-  ...PET_MAP,
-  ...EQUIPMENT_MAP,
-  ...UNIT_MAP,
+  rarity?: Rarity;
+}
+
+// ── 单分类映射表 ─────────────────────────────
+type AssetMap = Record<number, AssetInfo>;
+
+// 建筑 buildings (1000xxx)
+const BUILDING_MAP: AssetMap = {
+  1000000: { zh: "军队营地", en: "Army Camp", type: "buildings", color: "amber", icon: "⛺" },
+  1000001: { zh: "市政厅", en: "Town Hall", type: "buildings", color: "amber", icon: "🏛️" },
+  1000002: { zh: "圣水收集器", en: "Elixir Collector", type: "buildings", color: "amber", icon: "💧" },
+  1000003: { zh: "圣水储存罐", en: "Elixir Storage", type: "buildings", color: "amber", icon: "🏺" },
+  1000004: { zh: "金矿", en: "Gold Mine", type: "buildings", color: "amber", icon: "⛏️" },
+  1000005: { zh: "金库", en: "Gold Storage", type: "buildings", color: "amber", icon: "🏦" },
+  1000006: { zh: "兵营", en: "Barracks", type: "buildings", color: "amber", icon: "⚔️" },
+  1000007: { zh: "实验室", en: "Laboratory", type: "buildings", color: "amber", icon: "🔬" },
+  1000008: { zh: "加农炮", en: "Cannon", type: "buildings", color: "amber", icon: "💣" },
+  1000009: { zh: "箭塔", en: "Archer Tower", type: "buildings", color: "amber", icon: "🏹" },
+  1000010: { zh: "城墙", en: "Wall", type: "buildings", color: "amber", icon: "🧱" },
+  1000011: { zh: "法师塔", en: "Wizard Tower", type: "buildings", color: "amber", icon: "🔮" },
+  1000012: { zh: "防空火箭", en: "Air Defense", type: "buildings", color: "amber", icon: "🚀" },
+  1000013: { zh: "迫击炮", en: "Mortar", type: "buildings", color: "amber", icon: "💥" },
+  1000014: { zh: "部落城堡", en: "Clan Castle", type: "buildings", color: "amber", icon: "🏰" },
+  1000015: { zh: "建筑工人小屋", en: "Builder Hut", type: "buildings", color: "amber", icon: "🏚️" },
+  1000019: { zh: "隐形特斯拉电塔", en: "Hidden Tesla", type: "buildings", color: "amber", icon: "⚡" },
+  1000020: { zh: "法术工厂", en: "Spell Factory", type: "buildings", color: "indigo", icon: "⚗️" },
+  1000021: { zh: "X连弩", en: "X-Bow", type: "buildings", color: "amber", icon: "🎯" },
+  1000023: { zh: "暗圣水钻井", en: "Dark Elixir Drill", type: "buildings", color: "violet", icon: "🛢️" },
+  1000024: { zh: "暗圣水储存罐", en: "Dark Elixir Storage", type: "buildings", color: "violet", icon: "🏚️" },
+  1000026: { zh: "暗兵营", en: "Dark Barracks", type: "buildings", color: "violet", icon: "💀" },
+  1000027: { zh: "地狱塔", en: "Inferno Tower", type: "buildings", color: "red", icon: "🔥" },
+  1000028: { zh: "空气炮", en: "Air Sweeper", type: "buildings", color: "cyan", icon: "💨" },
+  1000029: { zh: "暗法术工厂", en: "Dark Spell Factory", type: "buildings", color: "violet", icon: "⚗️" },
+  1000031: { zh: "鹰龙火炮", en: "Eagle Artillery", type: "buildings", color: "red", icon: "🦅" },
+  1000032: { zh: "炸弹塔", en: "Bomb Tower", type: "buildings", color: "red", icon: "💣" },
+  1000059: { zh: "攻城机器工坊", en: "Workshop", type: "buildings", color: "zinc", icon: "🏗️" },
+  1000064: { zh: "锻造台", en: "Forge", type: "buildings", color: "amber", icon: "🔨" },
+  1000067: { zh: "散射炮", en: "Scattershot", type: "buildings", color: "red", icon: "🔫" },
+  1000068: { zh: "战宠小屋", en: "Pet House", type: "buildings", color: "emerald", icon: "🐾" },
+  1000070: { zh: "铁匠铺", en: "Blacksmith", type: "buildings", color: "violet", icon: "⚒️" },
+  1000071: { zh: "英雄殿", en: "Hero Hall", type: "buildings", color: "yellow", icon: "🛡️" },
+  1000072: { zh: "法术塔", en: "Spell Tower", type: "buildings", color: "indigo", icon: "🔮" },
+  1000077: { zh: "巨石炮", en: "Monolith", type: "buildings", color: "red", icon: "🗿" },
+  1000093: { zh: "助手小屋", en: "Helper Hut", type: "buildings", color: "rose", icon: "🔧" },
+};
+
+// 法术 spells (26000xxx)
+const SPELL_MAP: AssetMap = {
+  26000000: { zh: "闪电法术", en: "Lightning Spell", type: "spells", color: "indigo", icon: "⚡" },
+  26000001: { zh: "治疗法术", en: "Healing Spell", type: "spells", color: "emerald", icon: "💚" },
+  26000002: { zh: "狂暴法术", en: "Rage Spell", type: "spells", color: "red", icon: "😡" },
+  26000003: { zh: "跳跃法术", en: "Jump Spell", type: "spells", color: "cyan", icon: "🦘" },
+  26000005: { zh: "冰冻法术", en: "Freeze Spell", type: "spells", color: "cyan", icon: "❄️" },
+  26000009: { zh: "毒药法术", en: "Poison Spell", type: "spells", color: "violet", icon: "☠️" },
+  26000010: { zh: "地震法术", en: "Earthquake Spell", type: "spells", color: "amber", icon: "🌍" },
+  26000011: { zh: "急速法术", en: "Haste Spell", type: "spells", color: "cyan", icon: "💨" },
+  26000016: { zh: "克隆法术", en: "Clone Spell", type: "spells", color: "teal", icon: "🧬" },
+  26000017: { zh: "骷髅法术", en: "Skeleton Spell", type: "spells", color: "slate", icon: "💀" },
+  26000028: { zh: "蝙蝠法术", en: "Bat Spell", type: "spells", color: "slate", icon: "🦇" },
+  26000035: { zh: "隐身法术", en: "Invisibility Spell", type: "spells", color: "violet", icon: "👻" },
+  26000053: { zh: "召回法术", en: "Recall Spell", type: "spells", color: "indigo", icon: "🔁" },
+  26000070: { zh: "过度生长法术", en: "Overgrowth Spell", type: "spells", color: "emerald", icon: "🌱" },
+};
+
+// 英雄 heroes (28000xxx)
+const HERO_MAP: AssetMap = {
+  28000000: { zh: "野蛮人之王", en: "Barbarian King", type: "heroes", color: "yellow", icon: "👑" },
+  28000001: { zh: "弓箭女皇", en: "Archer Queen", type: "heroes", color: "yellow", icon: "👸" },
+  28000002: { zh: "小王子", en: "Minion Prince", type: "heroes", color: "yellow", icon: "🦇" },
+  28000004: { zh: "皇家冠军", en: "Royal Champion", type: "heroes", color: "yellow", icon: "🛡️" },
+  28000006: { zh: "大守护者", en: "Grand Warden", type: "heroes", color: "yellow", icon: "🧙" },
+};
+
+// 宠物 pets (73000xxx)
+const PET_MAP: AssetMap = {
+  73000000: { zh: "L.A.S.S.I", en: "L.A.S.S.I", type: "pets", color: "emerald", icon: "🐕" },
+  73000001: { zh: "电子枭", en: "Electro Owl", type: "pets", color: "emerald", icon: "🦉" },
+  73000002: { zh: "猛犸象", en: "Mighty Yak", type: "pets", color: "emerald", icon: "🐂" },
+  73000003: { zh: "独角兽", en: "Unicorn", type: "pets", color: "emerald", icon: "🦄" },
+  73000004: { zh: "雪怪", en: "Frosty", type: "pets", color: "emerald", icon: "❄️" },
+  73000005: { zh: "挖掘鼠", en: "Diggy", type: "pets", color: "emerald", icon: "🐀" },
+  73000006: { zh: "毒蜥", en: "Poison Lizard", type: "pets", color: "emerald", icon: "🦎" },
+  73000007: { zh: "凤凰", en: "Phoenix", type: "pets", color: "emerald", icon: "🔥" },
+  73000008: { zh: "怒水怪", en: "Danger Puddle", type: "pets", color: "emerald", icon: "💧" },
+  73000009: { zh: "灵狐", en: "Spirit Fox", type: "pets", color: "emerald", icon: "🦊" },
+  73000010: { zh: "愤怒水母", en: "Angry Jelly", type: "pets", color: "emerald", icon: "🪼" },
+};
+
+// 装备 equipment (106000xxx) — 含稀有度
+const EQUIPMENT_MAP: AssetMap = {
+  106000000: { zh: "野蛮人傀儡", en: "Barbarian Puppet", type: "equipment", color: "violet", icon: "👊", rarity: "common" },
+  106000001: { zh: "狂暴药瓶", en: "Rage Vial", type: "equipment", color: "violet", icon: "😡", rarity: "common" },
+  106000002: { zh: "弓箭手傀儡", en: "Archer Puppet", type: "equipment", color: "violet", icon: "🏹", rarity: "common" },
+  106000003: { zh: "隐身药瓶", en: "Invisibility Vial", type: "equipment", color: "violet", icon: "👻", rarity: "common" },
+  106000004: { zh: "永恒圣典", en: "Eternal Tome", type: "equipment", color: "violet", icon: "📖", rarity: "epic" },
+  106000005: { zh: "生命宝石", en: "Life Gem", type: "equipment", color: "violet", icon: "💎", rarity: "common" },
+  106000006: { zh: "追踪之盾", en: "Seeking Shield", type: "equipment", color: "violet", icon: "🛡️", rarity: "epic" },
+  106000007: { zh: "皇家宝石", en: "Royal Gem", type: "equipment", color: "violet", icon: "💎", rarity: "epic" },
+  106000008: { zh: "地震战靴", en: "Earthquake Boots", type: "equipment", color: "violet", icon: "🥾", rarity: "epic" },
+  106000009: { zh: "野猪骑士傀儡", en: "Hog Rider Puppet", type: "equipment", color: "violet", icon: "🐗", rarity: "common" },
+  106000010: { zh: "巨人护手", en: "Giant Gauntlet", type: "equipment", color: "violet", icon: "🧤", rarity: "epic" },
+  106000011: { zh: "吸血胡须", en: "Vampstache", type: "equipment", color: "violet", icon: "🧔", rarity: "common" },
+  106000012: { zh: "急速药瓶", en: "Haste Vial", type: "equipment", color: "violet", icon: "💨", rarity: "common" },
+  106000013: { zh: "火箭长矛", en: "Rocket Spear", type: "equipment", color: "violet", icon: "🚀", rarity: "epic" },
+  106000014: { zh: "尖刺球", en: "Spiky Ball", type: "equipment", color: "violet", icon: "🔮", rarity: "epic" },
+  106000015: { zh: "冰霜之箭", en: "Frozen Arrow", type: "equipment", color: "violet", icon: "🏹", rarity: "epic" },
+  106000016: { zh: "巨石之箭", en: "Monolith Arrow", type: "equipment", color: "violet", icon: "🏹", rarity: "epic" },
+  106000017: { zh: "巨箭", en: "Giant Arrow", type: "equipment", color: "violet", icon: "🏹", rarity: "common" },
+  106000019: { zh: "天使傀儡", en: "Healer Puppet", type: "equipment", color: "violet", icon: "😇", rarity: "common" },
+  106000020: { zh: "魔镜", en: "Magic Mirror", type: "equipment", color: "violet", icon: "🪞", rarity: "common" },
+  106000022: { zh: "魔法手套", en: "Magic Glove", type: "equipment", color: "violet", icon: "🧤", rarity: "common" },
+  106000024: { zh: "国王权杖", en: "King's Wand", type: "equipment", color: "violet", icon: "🪄", rarity: "epic" },
+  106000032: { zh: "女皇之守护", en: "Queen's Ward", type: "equipment", color: "violet", icon: "👑", rarity: "epic" },
+  106000034: { zh: "守护者宝珠", en: "Warden's Orb", type: "equipment", color: "violet", icon: "🔮", rarity: "epic" },
+  106000035: { zh: "冠军之冠", en: "Champion's Crown", type: "equipment", color: "violet", icon: "👑", rarity: "epic" },
+  106000039: { zh: "野蛮人门徒", en: "Barbarian Disciple", type: "equipment", color: "violet", icon: "⚔️", rarity: "legendary" },
+  106000040: { zh: "弓箭刺客", en: "Archer Assassin", type: "equipment", color: "violet", icon: "🏹", rarity: "legendary" },
+  106000041: { zh: "守护者光环", en: "Warden's Aura", type: "equipment", color: "violet", icon: "✨", rarity: "legendary" },
+  106000042: { zh: "狂怒守护者", en: "Rageful Guardian", type: "equipment", color: "violet", icon: "🛡️", rarity: "legendary" },
+  106000043: { zh: "神圣守护者", en: "Sacred Protector", type: "equipment", color: "violet", icon: "🛡️", rarity: "legendary" },
+  106000044: { zh: "暗影长矛", en: "Shadow Spear", type: "equipment", color: "violet", icon: "🗡️", rarity: "legendary" },
+  106000047: { zh: "凤凰之环", en: "Phoenix Ring", type: "equipment", color: "violet", icon: "🔥", rarity: "legendary" },
+  106000048: { zh: "吸血药瓶", en: "Vampire Vial", type: "equipment", color: "violet", icon: "🧛", rarity: "legendary" },
+  106000049: { zh: "骷髅钥匙", en: "Skeleton Key", type: "equipment", color: "violet", icon: "🗝️", rarity: "legendary" },
+  106000050: { zh: "霜寒守护", en: "Frost Guard", type: "equipment", color: "violet", icon: "❄️", rarity: "legendary" },
+  106000051: { zh: "毒药瓶", en: "Poison Flask", type: "equipment", color: "violet", icon: "☠️", rarity: "legendary" },
+  106000052: { zh: "地震之锤", en: "Earthquake Hammer", type: "equipment", color: "violet", icon: "🔨", rarity: "legendary" },
+  106000053: { zh: "闪电护符", en: "Lightning Charm", type: "equipment", color: "violet", icon: "⚡", rarity: "legendary" },
+  106000057: { zh: "克隆之冠", en: "Clone Crown", type: "equipment", color: "violet", icon: "👑", rarity: "legendary" },
+  106000060: { zh: "风暴使者", en: "Storm Bringer", type: "equipment", color: "violet", icon: "🌩️", rarity: "legendary" },
+};
+
+// 兵种 units (4000xxx)
+const UNIT_MAP: AssetMap = {
+  4000000: { zh: "野蛮人", en: "Barbarian", type: "units", color: "cyan", icon: "👤" },
+  4000001: { zh: "弓箭手", en: "Archer", type: "units", color: "cyan", icon: "🏹" },
+  4000002: { zh: "哥布林", en: "Goblin", type: "units", color: "cyan", icon: "👺" },
+  4000003: { zh: "巨人", en: "Giant", type: "units", color: "cyan", icon: "🗿" },
+  4000004: { zh: "法师", en: "Wizard", type: "units", color: "cyan", icon: "🔮" },
+  4000005: { zh: "天使", en: "Healer", type: "units", color: "cyan", icon: "😇" },
+  4000006: { zh: "飞龙", en: "Dragon", type: "units", color: "cyan", icon: "🐉" },
+  4000007: { zh: "皮卡超人", en: "P.E.K.K.A", type: "units", color: "cyan", icon: "🤖" },
+  4000008: { zh: "气球兵", en: "Balloon", type: "units", color: "cyan", icon: "🎈" },
+  4000009: { zh: "炸弹人", en: "Wall Breaker", type: "units", color: "cyan", icon: "💣" },
+  4000010: { zh: "飞龙宝宝", en: "Baby Dragon", type: "units", color: "cyan", icon: "🐲" },
+  4000011: { zh: "矿工", en: "Miner", type: "units", color: "cyan", icon: "⛏️" },
+  4000012: { zh: "电龙", en: "Electro Dragon", type: "units", color: "cyan", icon: "⚡" },
+  4000013: { zh: "米尼奥", en: "Minion", type: "units", color: "cyan", icon: "🦇" },
+  4000015: { zh: "瓦基丽", en: "Valkyrie", type: "units", color: "cyan", icon: "🪓" },
+  4000017: { zh: "投球手", en: "Bowler", type: "units", color: "cyan", icon: "🎳" },
+  4000022: { zh: "冰石巨人", en: "Ice Golem", type: "units", color: "cyan", icon: "❄️" },
+  4000023: { zh: "猎头者", en: "Headhunter", type: "units", color: "cyan", icon: "🎯" },
+  4000024: { zh: "守护者学徒", en: "Apprentice Warden", type: "units", color: "cyan", icon: "🧙" },
+  4000053: { zh: "雪怪", en: "Yeti", type: "units", color: "cyan", icon: "🐻‍❄️" },
+  4000058: { zh: "飞龙骑士", en: "Dragon Rider", type: "units", color: "cyan", icon: "🐉" },
+  4000059: { zh: "超级法师", en: "Super Wizard", type: "units", color: "cyan", icon: "🔮" },
+  4000065: { zh: "电泰坦", en: "Electro Titan", type: "units", color: "cyan", icon: "👩" },
+  4000082: { zh: "根须骑士", en: "Root Rider", type: "units", color: "cyan", icon: "🌿" },
+  4000097: { zh: "投掷者", en: "Thrower", type: "units", color: "cyan", icon: "🤾" },
+};
+
+// 助力 helpers (124000xxx)
+const HELPER_MAP: AssetMap = {
+  124000000: { zh: "助手 1", en: "Helper 1", type: "helpers", color: "rose", icon: "🔧" },
+  124000001: { zh: "助手 2", en: "Helper 2", type: "helpers", color: "rose", icon: "🛠️" },
+  124000002: { zh: "助手 3", en: "Helper 3", type: "helpers", color: "rose", icon: "⚙️" },
+};
+
+// 夜世界建筑 buildings2 (1000xxx, 1000033+)
+const BUILDING2_MAP: AssetMap = {
+  1000033: { zh: "夜世界城墙", en: "Builder Hall Wall", type: "buildings2", color: "slate", icon: "🧱" },
+  1000034: { zh: "夜世界加农炮", en: "Builder Hall Cannon", type: "buildings2", color: "slate", icon: "💣" },
+  1000035: { zh: "夜世界箭塔", en: "Builder Hall Archer Tower", type: "buildings2", color: "slate", icon: "🏹" },
+  1000036: { zh: "夜世界烟花炮", en: "Builder Hall Firecrackers", type: "buildings2", color: "slate", icon: "🎆" },
+  1000037: { zh: "夜世界双管炮", en: "Builder Hall Double Cannon", type: "buildings2", color: "slate", icon: "💣" },
+  1000038: { zh: "夜世界粉碎机", en: "Builder Hall Crusher", type: "buildings2", color: "slate", icon: "🔨" },
+  1000039: { zh: "夜世界哨岗", en: "Builder Hall Guard Post", type: "buildings2", color: "slate", icon: "🛡️" },
+  1000040: { zh: "夜世界空中炸弹", en: "Builder Hall Air Bombs", type: "buildings2", color: "slate", icon: "💥" },
+  1000041: { zh: "夜世界隐形特斯拉", en: "Builder Hall Hidden Tesla", type: "buildings2", color: "slate", icon: "⚡" },
+  1000042: { zh: "夜世界烤炉", en: "Builder Hall Roaster", type: "buildings2", color: "slate", icon: "🔥" },
+  1000043: { zh: "夜世界巨型加农炮", en: "Builder Hall Giant Cannon", type: "buildings2", color: "slate", icon: "💣" },
+  1000044: { zh: "夜世界超级特斯拉", en: "Builder Hall Mega Tesla", type: "buildings2", color: "slate", icon: "⚡" },
+  1000045: { zh: "夜世界熔岩发射器", en: "Builder Hall Lava Launcher", type: "buildings2", color: "slate", icon: "🌋" },
+  1000046: { zh: "夜世界多管迫击炮", en: "Builder Hall Multi Mortar", type: "buildings2", color: "slate", icon: "💥" },
+  1000048: { zh: "夜世界X连弩", en: "Builder Hall X-Bow", type: "buildings2", color: "slate", icon: "🎯" },
+  1000049: { zh: "夜世界时钟塔", en: "Builder Hall Clock Tower", type: "buildings2", color: "slate", icon: "🕰️" },
+  1000050: { zh: "夜世界战斗机器祭坛", en: "Builder Hall Battle Machine Altar", type: "buildings2", color: "slate", icon: "🛡️" },
+  1000051: { zh: "夜世界宝石矿", en: "Builder Hall Gem Mine", type: "buildings2", color: "slate", icon: "💎" },
+  1000052: { zh: "夜世界星级实验室", en: "Builder Hall Star Laboratory", type: "buildings2", color: "slate", icon: "🔬" },
+  1000053: { zh: "夜世界金库", en: "Builder Hall Gold Storage", type: "buildings2", color: "slate", icon: "🏦" },
+  1000054: { zh: "夜世界圣水储存", en: "Builder Hall Elixir Storage", type: "buildings2", color: "slate", icon: "🏺" },
+  1000055: { zh: "夜世界金矿", en: "Builder Hall Gold Mine", type: "buildings2", color: "slate", icon: "⛏️" },
+  1000056: { zh: "夜世界圣水收集器", en: "Builder Hall Elixir Collector", type: "buildings2", color: "slate", icon: "💧" },
+  1000057: { zh: "夜世界工人小屋", en: "Builder Hall Builder's Hut", type: "buildings2", color: "slate", icon: "🏚️" },
+  1000058: { zh: "夜世界OTTO小屋", en: "Builder Hall OTTO Hut", type: "buildings2", color: "slate", icon: "🏚️" },
+  1000063: { zh: "夜世界战斗直升机", en: "Builder Hall Battle Copter", type: "buildings2", color: "slate", icon: "🚁" },
+  1000065: { zh: "夜世界超级皮卡祭坛", en: "Builder Hall Super P.E.K.K.A Altar", type: "buildings2", color: "slate", icon: "🤖" },
+  1000078: { zh: "夜世界夜巫祭坛", en: "Builder Hall Night Witch Altar", type: "buildings2", color: "slate", icon: "🧙" },
+  1000080: { zh: "夜世界力量皮卡祭坛", en: "Builder Hall Power P.E.K.K.A Altar", type: "buildings2", color: "slate", icon: "🤖" },
+  1000082: { zh: "夜世界野猪滑翔机祭坛", en: "Builder Hall Hog Glider Altar", type: "buildings2", color: "slate", icon: "🐗" },
+};
+
+// 夜世界英雄 heroes2 (28000xxx)
+const HERO2_MAP: AssetMap = {
+  28000003: { zh: "战斗机器", en: "Battle Machine", type: "heroes2", color: "orange", icon: "🤖" },
+  28000005: { zh: "战斗直升机", en: "Battle Copter", type: "heroes2", color: "orange", icon: "🚁" },
+};
+
+// 夜世界兵种 units2 (4000xxx)
+const UNIT2_MAP: AssetMap = {
+  4000031: { zh: "狂暴野蛮人", en: "Raged Barbarian", type: "units2", color: "teal", icon: "👤" },
+  4000032: { zh: "潜行弓箭手", en: "Sneaky Archer", type: "units2", color: "teal", icon: "🏹" },
+  4000033: { zh: "beta米尼奥", en: "Beta Minion", type: "units2", color: "teal", icon: "🦇" },
+  4000034: { zh: "拳击巨人", en: "Boxer Giant", type: "units2", color: "teal", icon: "🗿" },
+  4000035: { zh: "轰炸兵", en: "Bomber", type: "units2", color: "teal", icon: "💣" },
+  4000036: { zh: "加农炮战车", en: "Cannon Cart", type: "units2", color: "teal", icon: "💣" },
+  4000037: { zh: "空投飞船", en: "Drop Ship", type: "units2", color: "teal", icon: "🚀" },
+  4000038: { zh: "夜巫", en: "Night Witch", type: "units2", color: "teal", icon: "🧙" },
+  4000041: { zh: "飞龙宝宝", en: "Baby Dragon", type: "units2", color: "teal", icon: "🐲" },
+  4000042: { zh: "力量皮卡", en: "Power P.E.K.K.A", type: "units2", color: "teal", icon: "🤖" },
+  4000070: { zh: "野猪滑翔机", en: "Hog Glider", type: "units2", color: "teal", icon: "🐗" },
+};
+
+// 攻城机器 siege_machines (4000xxx, 与 units 共享空间)
+const SIEGE_MAP: AssetMap = {
+  4000051: { zh: "攻城撞车", en: "Wall Wrecker", type: "siege_machines", color: "zinc", icon: "🛻" },
+  4000052: { zh: "攻城飞艇", en: "Battle Blimp", type: "siege_machines", color: "zinc", icon: "🛸" },
+  4000062: { zh: "攻城投石车", en: "Stone Slammer", type: "siege_machines", color: "zinc", icon: "🪨" },
+  4000075: { zh: "攻城兵营", en: "Siege Barracks", type: "siege_machines", color: "zinc", icon: "⛺" },
+  4000087: { zh: "攻城原木发射器", en: "Log Launcher", type: "siege_machines", color: "zinc", icon: "🪵" },
+};
+
+// ── 复合查找表 ───────────────────────────────
+export const ITEM_MAP: AssetMap = {
+  ...BUILDING_MAP, ...SPELL_MAP, ...HERO_MAP, ...PET_MAP, ...EQUIPMENT_MAP,
+  ...UNIT_MAP, ...HELPER_MAP, ...BUILDING2_MAP, ...HERO2_MAP, ...UNIT2_MAP,
   ...SIEGE_MAP,
-  ...HELPER_MAP,
-  ...TRAP_MAP,
 };
 
-// ============================================
-// 分类颜色定义
-// ============================================
-export const CATEGORY_COLORS: Record<string, { bg: string; border: string; text: string; icon: string }> = {
-  orange: { bg: "from-amber-900/20 to-amber-900/5", border: "border-amber-500/30", text: "text-amber-400", icon: "text-amber-500" },
-  blue: { bg: "from-indigo-900/20 to-indigo-900/5", border: "border-indigo-500/30", text: "text-indigo-400", icon: "text-indigo-500" },
-  gold: { bg: "from-yellow-600/20 to-yellow-600/5", border: "border-yellow-500/40", text: "text-yellow-400", icon: "text-yellow-500" },
-  green: { bg: "from-emerald-900/20 to-emerald-900/5", border: "border-emerald-500/30", text: "text-emerald-400", icon: "text-emerald-500" },
-  purple: { bg: "from-violet-900/20 to-violet-900/5", border: "border-violet-500/30", text: "text-violet-400", icon: "text-violet-500" },
-  cyan: { bg: "from-cyan-900/20 to-cyan-900/5", border: "border-cyan-500/30", text: "text-cyan-400", icon: "text-cyan-500" },
-  teal: { bg: "from-teal-900/20 to-teal-900/5", border: "border-teal-500/30", text: "text-teal-400", icon: "text-teal-500" },
-  red: { bg: "from-red-900/20 to-red-900/5", border: "border-red-500/30", text: "text-red-400", icon: "text-red-500" },
+// 注意：siege_machines 与 units 共享 4000xxx，按 category 优先精确匹配
+const BY_CATEGORY: Record<string, AssetMap> = {
+  buildings: BUILDING_MAP,
+  spells: SPELL_MAP,
+  heroes: HERO_MAP,
+  pets: PET_MAP,
+  equipment: EQUIPMENT_MAP,
+  units: UNIT_MAP,
+  helpers: HELPER_MAP,
+  buildings2: BUILDING2_MAP,
+  heroes2: HERO2_MAP,
+  units2: UNIT2_MAP,
+  siege_machines: SIEGE_MAP,
 };
 
-// ============================================
-// 分类标签映射
-// ============================================
-export const CATEGORY_LABELS: Record<string, string> = {
+// ── 分类中文标签 ─────────────────────────────
+export const ITEM_CATEGORY_LABELS: Record<string, string> = {
   buildings: "建筑",
   spells: "法术",
   heroes: "英雄",
   pets: "宠物",
   equipment: "装备",
   units: "兵种",
-  siege: "攻城机器",
-  helper: "助力",
-  trap: "陷阱",
+  helpers: "助力",
+  buildings2: "夜世界建筑",
+  heroes2: "夜世界英雄",
+  units2: "夜世界兵种",
+  siege_machines: "攻城机器",
+  traps: "陷阱",
+  traps2: "夜世界陷阱",
 };
 
-// ============================================
-// 根据 SC ID 范围推断分类
-// ============================================
+// ── 分类背景渐变色（Tailwind 类） ───────────
+export const CATEGORY_BG_COLORS: Record<string, string> = {
+  buildings: "from-amber-900/20 to-amber-900/5",
+  spells: "from-indigo-900/20 to-indigo-900/5",
+  heroes: "from-yellow-600/20 to-yellow-600/5",
+  pets: "from-emerald-900/20 to-emerald-900/5",
+  equipment: "from-violet-900/20 to-violet-900/5",
+  units: "from-cyan-900/20 to-cyan-900/5",
+  helpers: "from-rose-900/20 to-rose-900/5",
+  buildings2: "from-slate-800/20 to-slate-800/5",
+  heroes2: "from-orange-900/20 to-orange-900/5",
+  units2: "from-teal-900/20 to-teal-900/5",
+  siege_machines: "from-zinc-800/20 to-zinc-800/5",
+};
+
+// ── 稀有度颜色 ───────────────────────────────
+export const RARITY_COLORS: Record<Rarity, { border: string; text: string; glow: string }> = {
+  common: { border: "border-slate-500/30", text: "text-slate-300", glow: "" },
+  rare: { border: "border-blue-500/40", text: "text-blue-300", glow: "glow-indigo" },
+  epic: { border: "border-violet-500/40", text: "text-violet-300", glow: "glow-violet" },
+  legendary: { border: "border-amber-500/50", text: "text-amber-300", glow: "glow-amber" },
+};
+
+// ── 根据 SC ID 范围推断分类 ──────────────────
 export function inferCategory(scId: number): string {
   if (scId >= 1000000 && scId < 2000000) return "buildings";
-  if (scId >= 2500000 && scId < 2600000) return "trap";
-  if (scId >= 2600000 && scId < 2700000) return "spells";
-  if (scId >= 2700000 && scId < 2800000) return "siege";
-  if (scId >= 2800000 && scId < 3000000) return "heroes";
+  if (scId >= 26000000 && scId < 27000000) return "spells";
+  if (scId >= 28000000 && scId < 29000000) return "heroes";
+  if (scId >= 73000000 && scId < 74000000) return "pets";
+  if (scId >= 106000000 && scId < 107000000) return "equipment";
+  if (scId >= 124000000 && scId < 125000000) return "helpers";
   if (scId >= 4000000 && scId < 5000000) return "units";
-  if (scId >= 7300000 && scId < 7400000) return "pets";
-  if (scId >= 10600000 && scId < 10700000) return "equipment";
-  if (scId >= 12400000 && scId < 12500000) return "helper";
   return "unknown";
 }
 
-// ============================================
-// 根据 SC ID 和分类获取完整物品信息
-// ============================================
-export function getItemInfo(scId: number, category?: string): {
-  zh: string;
-  en: string;
-  type: string;
-  color: string;
-  icon: string;
-  category: string;
-} | null {
-  const matched = ITEM_MAP[scId];
-  if (!matched) {
-    return {
-      zh: `未知 ${inferCategory(scId)}`,
-      en: "Unknown Item",
-      type: category || inferCategory(scId),
-      color: "gray",
-      icon: "❓",
-      category: category || inferCategory(scId),
-    };
-  }
-  return {
-    ...matched,
-    category: category || matched.type,
-  };
+// ── 三级 fallback 查找 ───────────────────────
+export function getItemNameById(
+  category: string,
+  dataId: number | null | undefined
+): AssetInfo | null {
+  if (dataId == null) return null;
+
+  // 1. 精确 category 查找（解决 siege/units 共享 4000xxx 冲突）
+  const catMap = BY_CATEGORY[category];
+  if (catMap && catMap[dataId]) return catMap[dataId];
+
+  // 2. 全局查找
+  if (ITEM_MAP[dataId]) return ITEM_MAP[dataId];
+
+  // 3. fallback：返回未知
+  return null;
 }
 
-// ============================================
-// 格式化升级显示名称
-// ============================================
-export function formatUpgradeDisplay(
-  scId: number,
-  level: number,
-  category?: string
-): { zh: string; en: string; color: string; icon: string } {
-  const info = getItemInfo(scId, category);
+// ── 升级项显示信息 ───────────────────────────
+export function getUpgradeDisplay(
+  category: string,
+  dataId: number | null | undefined,
+  level: number
+): { zh: string; en: string; icon: string; color: ItemColor } {
+  const info = getItemNameById(category, dataId);
+  const catLabel = ITEM_CATEGORY_LABELS[category] || category;
   if (!info) {
-    return { zh: "未知项目", en: "Unknown", color: "gray", icon: "❓" };
+    return {
+      zh: `${catLabel} Lv${level}`,
+      en: `${category} Lv${level}`,
+      icon: "📦",
+      color: "gray",
+    };
   }
   return {
     zh: `${info.zh} Lv${level}`,
     en: `${info.en} Lv${level}`,
-    color: info.color,
     icon: info.icon,
+    color: info.color,
   };
 }
 
-// ============================================
-// 别名导出 (兼容 page.tsx / utils.ts 中的旧引用)
-// ============================================
-
-/** 根据 SC ID 获取中文名称 */
-export function getItemNameById(scId: number): string {
-  return ITEM_MAP[scId]?.zh ?? `未知#${scId}`;
-}
-
-/** 根据 category + data_id + level 格式化升级显示（匹配 page.tsx 调用方式） */
-export function getUpgradeDisplay(
-  category: string,
-  dataId: number | null,
-  level: number
-): { zh: string; en: string; color: string; icon: string } {
-  if (dataId != null) {
-    const info = getItemInfo(dataId, category);
-    if (info) {
-      return {
-        zh: `${info.zh} Lv${level}`,
-        en: `${info.en} Lv${level}`,
-        color: info.color,
-        icon: info.icon,
-      };
-    }
-  }
-  const catLabel = CATEGORY_LABELS[category] ?? category;
-  return {
-    zh: `${catLabel} Lv${level}`,
-    en: `${category} Lv${level}`,
-    color: "gray",
-    icon: "❓",
+// ── 根据颜色名取 Tailwind 类 ─────────────────
+export function getColorClasses(color: ItemColor): { border: string; text: string; bg: string } {
+  const map: Record<ItemColor, { border: string; text: string; bg: string }> = {
+    amber: { border: "border-amber-500/30", text: "text-amber-400", bg: "from-amber-900/20 to-amber-900/5" },
+    indigo: { border: "border-indigo-500/30", text: "text-indigo-400", bg: "from-indigo-900/20 to-indigo-900/5" },
+    yellow: { border: "border-yellow-500/40", text: "text-yellow-400", bg: "from-yellow-600/20 to-yellow-600/5" },
+    emerald: { border: "border-emerald-500/30", text: "text-emerald-400", bg: "from-emerald-900/20 to-emerald-900/5" },
+    violet: { border: "border-violet-500/30", text: "text-violet-400", bg: "from-violet-900/20 to-violet-900/5" },
+    cyan: { border: "border-cyan-500/30", text: "text-cyan-400", bg: "from-cyan-900/20 to-cyan-900/5" },
+    rose: { border: "border-rose-500/30", text: "text-rose-400", bg: "from-rose-900/20 to-rose-900/5" },
+    slate: { border: "border-slate-500/30", text: "text-slate-400", bg: "from-slate-800/20 to-slate-800/5" },
+    orange: { border: "border-orange-500/30", text: "text-orange-400", bg: "from-orange-900/20 to-orange-900/5" },
+    teal: { border: "border-teal-500/30", text: "text-teal-400", bg: "from-teal-900/20 to-teal-900/5" },
+    zinc: { border: "border-zinc-500/30", text: "text-zinc-400", bg: "from-zinc-800/20 to-zinc-800/5" },
+    red: { border: "border-red-500/30", text: "text-red-400", bg: "from-red-900/20 to-red-900/5" },
+    gray: { border: "border-gray-500/30", text: "text-gray-400", bg: "from-gray-800/20 to-gray-800/5" },
   };
+  return map[color] || map.gray;
 }
-
-/** 分类标签 — 别名，兼容旧接口 */
-export const ITEM_CATEGORY_LABELS: Record<string, string> = CATEGORY_LABELS;
-
-/** 分类背景颜色 — 用于 UI 渲染 */
-export const CATEGORY_BG_COLORS: Record<string, string> = {
-  buildings: "from-amber-900/30 to-amber-900/10",
-  spells: "from-indigo-900/30 to-indigo-900/10",
-  heroes: "from-yellow-600/30 to-yellow-600/10",
-  pets: "from-emerald-900/30 to-emerald-900/10",
-  equipment: "from-violet-900/30 to-violet-900/10",
-  units: "from-blue-900/30 to-blue-900/10",
-  siege: "from-cyan-900/30 to-cyan-900/10",
-  helper: "from-teal-900/30 to-teal-900/10",
-  trap: "from-red-900/30 to-red-900/10",
-  unknown: "from-gray-900/30 to-gray-900/10",
-};

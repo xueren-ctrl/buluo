@@ -20,6 +20,13 @@ frontend/out/
 # IDE
 .vscode/
 .idea/
+.trae/
+
+# Trae memory / workbuddy
+.workbuddy/
+
+# Nested duplicate folder (do not track)
+/buluo/
 
 # OS
 .DS_Store
@@ -27,6 +34,18 @@ Thumbs.db
 nul
 device.ini
 
+<<<<<<< HEAD
+=======
+# Logs
+*.log
+npm-debug.log*
+
+# Frontend specific
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+>>>>>>> 3a75304 (feat: 升级规划助手 Phase 1 + 实时倒计时 + 部署优化)
 # Build output
 db.json
 frontend/.env.local
