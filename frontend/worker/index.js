@@ -242,7 +242,20 @@ self.addEventListener("install", () => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  // 清除所有旧缓存，确保新版本部署后旧缓存策略失效
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.map((key) => {
+          // 保留 workbox-google-analytics 等系统缓存，清除其余
+          if (key.startsWith("workbox-")) return;
+          return caches.delete(key);
+        })
+      );
+      await self.clients.claim();
+    })()
+  );
 });
 
 self.addEventListener("periodicsync", (event) => {

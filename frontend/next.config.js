@@ -41,28 +41,28 @@ const withPWA = require("next-pwa")({
       },
     },
 
-    // Network First: Next.js 静态资源（JS/CSS/chunks）—— 优先网络，回退缓存
-    // 用 NetworkFirst 而非 CacheFirst，确保新版本部署后用户能拿到最新 JS
+    // Stale While Revalidate: Next.js 静态资源（JS/CSS/chunks）
+    // 先返回缓存（秒开），同时后台更新；下次访问自动是最新版本
+    // 用户无需手动刷新，新版本部署后自动生效
     {
       urlPattern: /^https?.*\/_next\//,
-      handler: "NetworkFirst",
+      handler: "StaleWhileRevalidate",
       options: {
         cacheName: "next-assets-cache",
-        networkTimeoutSeconds: 10,
         expiration: {
           maxEntries: 100,
-          maxAgeSeconds: 60 * 60 * 24, // 1天
+          maxAgeSeconds: 60 * 60 * 24 * 7, // 7天
         },
       },
     },
 
-    // Network First: 页面导航请求 —— 优先网络，离线回退缓存
+    // Network First: 页面导航请求 —— 优先网络，确保 HTML 最新
     {
       urlPattern: ({ request }) => request.mode === "navigate",
       handler: "NetworkFirst",
       options: {
         cacheName: "pages-cache",
-        networkTimeoutSeconds: 10,
+        networkTimeoutSeconds: 5,
         expiration: {
           maxEntries: 50,
           maxAgeSeconds: 60 * 60 * 12, // 12小时

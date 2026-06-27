@@ -91,30 +91,16 @@ function fallbackNotification(
 }
 
 // ── 注册 PWA Service Worker ──────────────────
-export async function registerSW(onUpdate?: () => void): Promise<ServiceWorkerRegistration | null> {
+// 新 SW 安装后自动 skipWaiting + clientsClaim（见 next.config.js）
+// 页面通过 controllerchange 事件自动刷新，用户无需任何操作
+export async function registerSW(): Promise<ServiceWorkerRegistration | null> {
   if (typeof window === "undefined") return null;
   if (!("serviceWorker" in navigator)) return null;
 
   try {
     const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
 
-    // 已有 SW 控制页面且检测到新版本（waiting SW）
-    if (reg.waiting && navigator.serviceWorker.controller) {
-      onUpdate?.();
-    }
-
-    // 监听新 SW 安装
-    reg.addEventListener("updatefound", () => {
-      const newSW = reg.installing;
-      if (!newSW) return;
-      newSW.addEventListener("statechange", () => {
-        if (newSW.state === "installed" && navigator.serviceWorker.controller) {
-          onUpdate?.();
-        }
-      });
-    });
-
-    // 定期检查 SW 更新（每小时）
+    // 定期检查 SW 更新（每小时一次，后台静默）
     setInterval(() => {
       reg.update().catch(() => {});
     }, 60 * 60 * 1000);
@@ -124,17 +110,6 @@ export async function registerSW(onUpdate?: () => void): Promise<ServiceWorkerRe
     console.warn("[通知系统] Service Worker 注册失败");
     return null;
   }
-}
-
-// ── 激活等待中的 SW 并刷新页面 ──────────────
-export function activateUpdate(): void {
-  if (!("serviceWorker" in navigator)) return;
-  navigator.serviceWorker.ready.then((reg) => {
-    if (reg.waiting) {
-      reg.waiting.postMessage({ type: "SKIP_WAITING" });
-    }
-  });
-  window.location.reload();
 }
 
 // ── 周期性后台同步（best-effort）──────────────

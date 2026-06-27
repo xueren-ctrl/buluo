@@ -17,7 +17,6 @@ import {
   registerSW,
   registerPeriodicSync,
   detectNotifyStatus,
-  activateUpdate,
   type NotifyStatus,
 } from "@/lib/notification-system";
 import {
@@ -82,7 +81,6 @@ export default function HomePage() {
     periodicSyncSupported: false,
     isInstalled: false,
   });
-  const [swUpdateAvailable, setSwUpdateAvailable] = useState(false);
 
   const schedulerRef = useRef<Scheduler | null>(null);
   const pwa = usePwaInstall();
@@ -155,10 +153,9 @@ export default function HomePage() {
       }
 
       // 3. 注册 Service Worker + Periodic Sync
+      // 新 SW 激活后自动刷新页面一次（无需用户操作），用 sessionStorage 防止死循环
       try {
-        const reg = await registerSW(() => {
-          setSwUpdateAvailable(true);
-        });
+        const reg = await registerSW();
         if (cancelled) return;
         setNotifyStatus(detectNotifyStatus(reg));
         if (reg) {
@@ -176,6 +173,25 @@ export default function HomePage() {
     init();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── SW 更新自动刷新（无需用户操作）──────
+  // 新 SW 激活后，自动刷新页面一次加载最新资源；用 sessionStorage 防止死循环
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    let refreshed = false;
+    const onControllerChange = () => {
+      if (refreshed) return;
+      if (sessionStorage.getItem("sw-refreshed") === "1") {
+        sessionStorage.removeItem("sw-refreshed");
+        return;
+      }
+      refreshed = true;
+      sessionStorage.setItem("sw-refreshed", "1");
+      window.location.reload();
+    };
+    navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+    return () => navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
   }, []);
 
   // ── 升级变化 → 持久化 + 通知调度器 ──
@@ -359,22 +375,6 @@ export default function HomePage() {
       />
 
       <main className="min-h-screen flex flex-col px-3 py-5 md:px-6 md:py-8 max-w-2xl mx-auto app-shell">
-
-        {/* ======== SW 更新提示 ======== */}
-        {swUpdateAvailable && (
-          <div className="w-full mb-4 glass-card p-3 flex items-center justify-between border-emerald-500/40 bg-emerald-500/10">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🔄</span>
-              <span className="text-sm text-dark-200">新版本已就绪，点击刷新更新</span>
-            </div>
-            <button
-              onClick={() => activateUpdate()}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors active:scale-95"
-            >
-              立即刷新
-            </button>
-          </div>
-        )}
 
         {/* ======== 顶部 PWA 安装条 ======== */}
         {pwa.status === "deferred" && (
