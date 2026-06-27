@@ -284,9 +284,13 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// 页面通过 postMessage 触发立即检查（可选）
+// 页面通过 postMessage 触发立即检查或跳过等待
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "RUN_PERIODIC_CHECK") {
+  if (!event.data) return;
+  if (event.data.type === "RUN_PERIODIC_CHECK") {
     event.waitUntil(runPeriodicCheck());
+  }
+  if (event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
   }
 });

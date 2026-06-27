@@ -17,6 +17,7 @@ import {
   registerSW,
   registerPeriodicSync,
   detectNotifyStatus,
+  activateUpdate,
   type NotifyStatus,
 } from "@/lib/notification-system";
 import {
@@ -81,6 +82,7 @@ export default function HomePage() {
     periodicSyncSupported: false,
     isInstalled: false,
   });
+  const [swUpdateAvailable, setSwUpdateAvailable] = useState(false);
 
   const schedulerRef = useRef<Scheduler | null>(null);
   const pwa = usePwaInstall();
@@ -154,7 +156,9 @@ export default function HomePage() {
 
       // 3. 注册 Service Worker + Periodic Sync
       try {
-        const reg = await registerSW();
+        const reg = await registerSW(() => {
+          setSwUpdateAvailable(true);
+        });
         if (cancelled) return;
         setNotifyStatus(detectNotifyStatus(reg));
         if (reg) {
@@ -355,6 +359,22 @@ export default function HomePage() {
       />
 
       <main className="min-h-screen flex flex-col px-3 py-5 md:px-6 md:py-8 max-w-2xl mx-auto app-shell">
+
+        {/* ======== SW 更新提示 ======== */}
+        {swUpdateAvailable && (
+          <div className="w-full mb-4 glass-card p-3 flex items-center justify-between border-emerald-500/40 bg-emerald-500/10">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🔄</span>
+              <span className="text-sm text-dark-200">新版本已就绪，点击刷新更新</span>
+            </div>
+            <button
+              onClick={() => activateUpdate()}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors active:scale-95"
+            >
+              立即刷新
+            </button>
+          </div>
+        )}
 
         {/* ======== 顶部 PWA 安装条 ======== */}
         {pwa.status === "deferred" && (
