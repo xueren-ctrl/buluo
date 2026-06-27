@@ -269,7 +269,6 @@ export default function HomePage() {
     const onInPageNotif = (e: Event) => {
       const { title, body } = (e as CustomEvent).detail;
       toast(`${title}\n${body}`, {
-        icon: "🔔",
         duration: 8000,
         className: "toast-success",
       });
@@ -455,14 +454,7 @@ export default function HomePage() {
       <Toaster
         position="top-center"
         toastOptions={{
-          duration: 3500,
-          style: {
-            background: "#1e293b",
-            color: "#f1f5f9",
-            border: "1px solid #334155",
-            borderRadius: "12px",
-            fontSize: "14px",
-          },
+          duration: 4000,
         }}
       />
 
@@ -477,41 +469,18 @@ export default function HomePage() {
 
         {/* ======== Hero 区域 ======== */}
         <header className="text-center mb-5">
-          <h1 className="coc-hero-title text-2xl md:text-3xl mb-1.5 tracking-tight">
+          <h1 className="coc-hero-title text-xl md:text-2xl mb-1">
             部落冲突升级规划助手
           </h1>
-          <p className="text-sub text-sm max-w-md mx-auto leading-relaxed">
-            上传 JSON → 自动分析基地 → 智能规划升级 → 本地通知提醒
+          <p className="text-sub text-xs md:text-sm">
+            上传 JSON · 自动分析基地 · 本地通知提醒
           </p>
-          {/* 实时时钟 — 证明页面每秒在刷新 */}
-          <div
-            className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs"
-            style={{
-              background: "var(--bg-panel-alt)",
-              border: "1.5px solid var(--border-dark)",
-              color: "var(--text-sub)",
-            }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ background: "var(--color-success)" }}
-            />
-            <span className="coc-countdown">{new Date().toLocaleTimeString("zh-CN", { hour12: false })}</span>
-          </div>
           {playerInfo && (
-            <div
-              className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs"
-              style={{
-                background: "var(--bg-panel-alt)",
-                border: "1.5px solid var(--border-dark)",
-                color: "var(--text-sub)",
-              }}
-            >
-              <span>👤</span>
-              <span className="text-main">{playerInfo.player_name || playerInfo.player_tag}</span>
-              <span>·</span>
-              <span className="text-gold font-medium">大本 Lv{playerInfo.town_hall_level}</span>
-            </div>
+            <p className="mt-2 text-xs text-muted">
+              {playerInfo.player_name || playerInfo.player_tag}
+              <span className="mx-1.5">·</span>
+              <span className="text-gold">大本 Lv{playerInfo.town_hall_level}</span>
+            </p>
           )}
         </header>
 
@@ -667,9 +636,8 @@ export default function HomePage() {
             {/* 即将完成 (高亮) */}
             {nextUpgrade && (
               <section className="w-full mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-bold text-red-400 tracking-wider uppercase">🔥 即将完成</span>
-                  <div className="flex-1 h-px bg-gradient-to-r from-red-500/30 to-transparent" />
+                <div className="coc-divider">
+                  <span className="text-danger">即将完成</span>
                 </div>
                 <NextCompletingCard item={nextUpgrade} />
               </section>
@@ -680,12 +648,12 @@ export default function HomePage() {
 
             {/* 操作栏 */}
             <div className="w-full flex gap-2 mb-4">
-              <button onClick={handleRefresh} disabled={loading} className="btn-secondary flex-1 py-2 text-sm">
-                {loading ? "⏳ 解析中..." : "🔄 重新解析"}
+              <button onClick={handleRefresh} disabled={loading} className="coc-btn-secondary flex-1 py-2 text-sm">
+                {loading ? "解析中..." : "重新解析"}
               </button>
               {!notifyStatus.browserNotifGranted && (
-                <button onClick={handleEnableNotify} className="btn-secondary flex-1 py-2 text-sm">
-                  🔔 开启通知
+                <button onClick={handleEnableNotify} className="coc-btn-secondary flex-1 py-2 text-sm">
+                  开启通知
                 </button>
               )}
             </div>
@@ -734,7 +702,7 @@ export default function HomePage() {
 
         {/* ======== 空状态 ======== */}
         {upgrades.length === 0 && !loading && (
-          <EmptyState emoji="📭" title="暂无升级数据" desc="请在上方粘贴 CoC JSON 数据开始追踪" />
+          <EmptyState title="暂无升级数据" desc="请在上方粘贴 CoC JSON 数据开始追踪" />
         )}
 
         {/* ======== Loading ======== */}
@@ -745,9 +713,8 @@ export default function HomePage() {
           </div>
         )}
 
-        <footer className="mt-4 text-center text-dark-600 text-xs space-y-1 pb-6 safe-area-bottom">
+        <footer className="mt-4 text-center text-muted text-xs pb-6 safe-area-bottom">
           <p>纯前端 PWA · 数据本地存储 · 无需服务器</p>
-          <p>仅使用用户手动导出的 JSON，不涉及模拟 / 抓包</p>
         </footer>
       </main>
     </>

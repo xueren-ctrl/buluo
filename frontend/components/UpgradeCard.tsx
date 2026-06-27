@@ -1,5 +1,5 @@
 /**
- * 升级项卡片 — CoC 羊皮纸风格，无进度条，大字倒计时
+ * 升级项卡片 — CoC 简约风格，无进度条，大字倒计时
  */
 import type { UpgradeItem } from "@/types";
 import { getUrgencyLevel } from "@/types";
@@ -16,17 +16,20 @@ export function UpgradeCard({ item }: { item: UpgradeItem }) {
   const display = getUpgradeDisplay(item.category, item.data_id ?? null, item.item_level);
 
   const urgency = getUrgencyLevel(remaining);
-  const urgentAnim = urgency === "urgent" && !done ? "coc-pulse" : "";
+  const isUrgent = urgency === "urgent" && !done;
 
   return (
-    <div className={`coc-card p-2.5 ${done ? "coc-completed" : ""} ${urgentAnim}`}>
+    <div
+      className={`coc-card p-2.5 ${done ? "coc-completed" : ""}`}
+      style={isUrgent ? { borderColor: "var(--color-danger)" } : undefined}
+    >
       <div className="flex items-center gap-2.5">
         {/* 图标 */}
         <div
           className="flex-shrink-0 w-9 h-9 rounded flex items-center justify-center text-lg"
           style={{
             background: "var(--bg-panel-alt)",
-            border: "1.5px solid var(--border-dark)",
+            border: "1px solid var(--border-light)",
           }}
         >
           {display.icon}
@@ -54,7 +57,7 @@ export function UpgradeCard({ item }: { item: UpgradeItem }) {
           ) : (
             <span
               className={`coc-countdown coc-countdown-large ${
-                urgency === "urgent" ? "coc-countdown-urgent" : ""
+                isUrgent ? "coc-countdown-urgent" : ""
               }`}
             >
               {formatCompactRemaining(remaining)}

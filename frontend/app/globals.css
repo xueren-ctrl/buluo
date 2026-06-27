@@ -2,100 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===================== 部落冲突官方 UI 主题变量 ===================== */
-/* 羊皮纸 + 石头质感，克制无堆砌 */
+/* ===================== 部落冲突简约主题 ===================== */
+/* 克制的羊皮纸质感，去掉过重装饰 */
 :root {
   /* 浅色（羊皮纸）*/
-  --bg-page: #F2E8D0;
-  --bg-panel: #EDE0C4;
-  --bg-panel-alt: #E8D9B8;
-  --bg-content: #F5EDD8;
-  --bg-input: #FAF4E4;
+  --bg-page: #F5EFE0;
+  --bg-panel: #FAF4E4;
+  --bg-panel-alt: #EDE3CC;
+  --bg-content: #F8F2E2;
+  --bg-input: #FFFBF0;
 
-  --text-main: #2A1A08;
-  --text-sub: #5C4008;
-  --text-muted: #8B7355;
+  --text-main: #2D2410;
+  --text-sub: #5C4A2A;
+  --text-muted: #8C7A5A;
 
-  --border-gold: #8B6914;
-  --border-dark: #5C4008;
-  --border-light: #C4A85C;
+  --border-gold: #B8985A;
+  --border-dark: #6B5836;
+  --border-light: #D4BC82;
 
   --color-gold: #8B6914;
-  --color-gold-light: #C4A85C;
-  --color-gold-bg: linear-gradient(180deg, #C4A85C 0%, #8B6914 100%);
+  --color-gold-light: #B8985A;
 
-  /* 按钮游戏绿 */
-  --btn-green: linear-gradient(180deg, #4A8C28 0%, #2D5A18 100%);
-  --btn-green-border: #1A3A0C;
-  --btn-green-shadow: #0F2208;
+  /* 按钮 */
+  --btn-green: #4A8C28;
+  --btn-green-hover: #5BA035;
+  --btn-green-border: #2D5A18;
 
   /* 倒计时数字深蓝 */
   --color-countdown: #1A3A6B;
 
   /* 状态色 */
   --color-success: #3A7820;
-  --color-success-bg: rgba(58, 120, 32, 0.12);
-  --color-danger: #8B2500;
-  --color-danger-bg: rgba(139, 37, 0, 0.10);
-  --color-warning: #8B6914;
-  --color-warning-bg: rgba(139, 105, 20, 0.12);
+  --color-success-bg: rgba(58, 120, 32, 0.10);
+  --color-danger: #B8390E;
+  --color-danger-bg: rgba(184, 57, 14, 0.08);
+  --color-warning: #B07814;
+  --color-warning-bg: rgba(176, 120, 20, 0.10);
 
   /* Toggle */
-  --toggle-off-bg: #5C4008;
-  --toggle-on-bg: #3A7820;
-  --toggle-knob: #F5EDD8;
+  --toggle-off-bg: #C4B49A;
+  --toggle-on-bg: #4A8C28;
+  --toggle-knob: #FFFFFF;
 
-  /* 面板阴影（石头立体感）*/
-  --shadow-panel: 0 3px 0 #5C4008;
-  --shadow-btn: 0 3px 0 #0F2208;
-  --shadow-hover: 0 5px 0 #5C4008;
+  /* 阴影（轻量化）*/
+  --shadow-panel: 0 1px 2px rgba(107, 88, 54, 0.15);
+  --shadow-btn: 0 1px 2px rgba(0, 0, 0, 0.15);
 
   /* 分隔线 */
-  --divider: #C4A85C;
+  --divider: rgba(184, 152, 90, 0.35);
 }
 
 :root[data-theme="dark"] {
-  /* 深色（深棕压暗）*/
-  --bg-page: #0D0A06;
-  --bg-panel: #1E1608;
-  --bg-panel-alt: #281D0C;
-  --bg-content: #1A1408;
-  --bg-input: #15100A;
+  /* 深色（深棕）*/
+  --bg-page: #1A1610;
+  --bg-panel: #25201A;
+  --bg-panel-alt: #2E2820;
+  --bg-content: #23201A;
+  --bg-input: #1F1B15;
 
-  --text-main: #E8D9B8;
-  --text-sub: #C4A85C;
-  --text-muted: #8B7355;
+  --text-main: #EDE3CC;
+  --text-sub: #B8985A;
+  --text-muted: #7A6A4E;
 
-  --border-gold: #8B6914;
-  --border-dark: #3A2A10;
-  --border-light: #5C4008;
+  --border-gold: #6B5836;
+  --border-dark: #3A2E1E;
+  --border-light: #4A3E2A;
 
-  --color-gold: #C4A85C;
-  --color-gold-light: #E8D9B8;
-  --color-gold-bg: linear-gradient(180deg, #8B6914 0%, #5C4008 100%);
+  --color-gold: #C4A468;
+  --color-gold-light: #E0C488;
 
-  --btn-green: linear-gradient(180deg, #3A7820 0%, #1A3A0C 100%);
-  --btn-green-border: #0F2208;
-  --btn-green-shadow: #050C02;
+  --btn-green: #4A8C28;
+  --btn-green-hover: #5BA035;
+  --btn-green-border: #1F3A12;
 
-  --color-countdown: #6B8FB5;
+  --color-countdown: #7CA0D4;
 
-  --color-success: #4A8C28;
-  --color-success-bg: rgba(74, 140, 40, 0.15);
-  --color-danger: #C44A28;
-  --color-danger-bg: rgba(196, 74, 40, 0.12);
-  --color-warning: #C4A85C;
-  --color-warning-bg: rgba(196, 168, 92, 0.12);
+  --color-success: #6BB23E;
+  --color-success-bg: rgba(107, 178, 62, 0.12);
+  --color-danger: #E06848;
+  --color-danger-bg: rgba(224, 104, 72, 0.12);
+  --color-warning: #D4A858;
+  --color-warning-bg: rgba(212, 168, 88, 0.12);
 
-  --toggle-off-bg: #3A2A10;
-  --toggle-on-bg: #3A7820;
-  --toggle-knob: #E8D9B8;
+  --toggle-off-bg: #4A3E2A;
+  --toggle-on-bg: #4A8C28;
+  --toggle-knob: #EDE3CC;
 
-  --shadow-panel: 0 3px 0 #050C02;
-  --shadow-btn: 0 3px 0 #050C02;
-  --shadow-hover: 0 5px 0 #050C02;
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-btn: 0 1px 2px rgba(0, 0, 0, 0.4);
 
-  --divider: #5C4008;
+  --divider: rgba(184, 152, 90, 0.25);
 }
 
 /* ===================== 全局基础 ===================== */
@@ -123,26 +119,26 @@ body {
 
 /* ===================== 滚动条 ===================== */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--bg-panel); }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 9999px; }
 
-/* ===================== 面板（CoC 石头质感）===================== */
+/* ===================== 面板 ===================== */
 .coc-panel {
   background: var(--bg-panel);
-  border: 2.5px solid var(--border-gold);
-  border-radius: 10px;
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
   box-shadow: var(--shadow-panel);
   overflow: hidden;
 }
 
 .coc-panel-header {
-  background: var(--color-gold-bg);
-  border-bottom: 2px solid var(--border-dark);
-  padding: 8px 14px;
-  color: #F5EDD8;
-  font-weight: 700;
+  background: var(--bg-panel-alt);
+  border-bottom: 1px solid var(--divider);
+  padding: 10px 14px;
+  color: var(--text-main);
+  font-weight: 600;
   font-size: 0.875rem;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .coc-panel-body {
@@ -150,75 +146,56 @@ body {
   padding: 14px;
 }
 
-/* ===================== 简化卡片（无标题栏）===================== */
+/* ===================== 卡片 ===================== */
 .coc-card {
   background: var(--bg-panel);
-  border: 2px solid var(--border-gold);
-  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
   box-shadow: var(--shadow-panel);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.coc-card:hover {
-  box-shadow: var(--shadow-hover);
+  transition: border-color 0.2s ease;
 }
 
 .coc-card:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 0 var(--border-dark);
+  border-color: var(--border-gold);
 }
 
-/* ===================== 按钮（CoC 游戏绿）===================== */
+/* ===================== 按钮 ===================== */
 .coc-btn {
   background: var(--btn-green);
-  border: 2px solid var(--btn-green-border);
-  border-radius: 8px;
+  border: 1px solid var(--btn-green-border);
+  border-radius: 6px;
   box-shadow: var(--shadow-btn);
-  color: #F5EDD8;
-  font-weight: 700;
+  color: #FFFFFF;
+  font-weight: 600;
   padding: 10px 16px;
-  transition: all 0.15s ease;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  transition: background 0.15s ease, transform 0.1s ease;
 }
 
-.coc-btn:hover {
-  filter: brightness(1.1);
-}
-
-.coc-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 var(--btn-green-shadow);
-}
-
+.coc-btn:hover { background: var(--btn-green-hover); }
+.coc-btn:active { transform: translateY(1px); }
 .coc-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  filter: grayscale(0.5);
 }
 
-/* 次级按钮（棕色）*/
 .coc-btn-secondary {
   background: var(--bg-panel-alt);
-  border: 2px solid var(--border-dark);
-  border-radius: 8px;
-  box-shadow: 0 2px 0 var(--border-dark);
+  border: 1px solid var(--border-gold);
+  border-radius: 6px;
   color: var(--text-main);
   font-weight: 600;
   padding: 8px 14px;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, transform 0.1s ease;
 }
 
-.coc-btn-secondary:hover { filter: brightness(1.05); }
-.coc-btn-secondary:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 0 var(--border-dark);
-}
+.coc-btn-secondary:hover { filter: brightness(0.97); }
+.coc-btn-secondary:active { transform: translateY(1px); }
 
 /* ===================== 输入框 ===================== */
 .coc-input {
   background: var(--bg-input);
-  border: 2px solid var(--border-gold);
-  border-radius: 8px;
+  border: 1px solid var(--border-gold);
+  border-radius: 6px;
   color: var(--text-main);
   padding: 10px 12px;
   transition: border-color 0.2s ease;
@@ -227,8 +204,7 @@ body {
 
 .coc-input:focus {
   outline: none;
-  border-color: var(--color-gold-light);
-  box-shadow: 0 0 0 2px var(--color-warning-bg);
+  border-color: var(--color-gold);
 }
 
 .coc-input::placeholder {
@@ -239,48 +215,47 @@ body {
 /* ===================== Toggle 开关 ===================== */
 .coc-toggle {
   position: relative;
-  width: 44px;
-  height: 24px;
+  width: 40px;
+  height: 22px;
   border-radius: 9999px;
   background: var(--toggle-off-bg);
-  border: 1.5px solid var(--border-dark);
-  transition: background 0.25s ease;
+  border: none;
+  transition: background 0.2s ease;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .coc-toggle.on {
   background: var(--toggle-on-bg);
-  border-color: var(--btn-green-border);
 }
 
 .coc-toggle .coc-toggle-knob {
   position: absolute;
-  top: 1px;
-  left: 1px;
-  width: 20px;
-  height: 20px;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
   border-radius: 9999px;
   background: var(--toggle-knob);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
 }
 
 .coc-toggle.on .coc-toggle-knob {
-  transform: translateX(20px);
+  transform: translateX(18px);
 }
 
 /* ===================== 倒计时数字 ===================== */
 .coc-countdown {
   color: var(--color-countdown);
   font-family: "Inter", monospace;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .coc-countdown-large {
-  font-size: 1.25rem;
-  letter-spacing: -0.02em;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
 }
 
 .coc-countdown-urgent {
@@ -290,7 +265,7 @@ body {
 /* ===================== 标签 ===================== */
 .coc-tag {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
   font-size: 0.6875rem;
   font-weight: 600;
@@ -309,17 +284,16 @@ body {
   color: var(--color-warning);
 }
 
-/* ===================== 分隔行（分类小标题）===================== */
+/* ===================== 分隔行 ===================== */
 .coc-divider {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 4px;
+  padding: 8px 2px 4px;
   color: var(--text-muted);
   font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
 .coc-divider::after {
@@ -327,10 +301,9 @@ body {
   flex: 1;
   height: 1px;
   background: var(--divider);
-  opacity: 0.5;
 }
 
-/* ===================== 已完成项样式 ===================== */
+/* ===================== 已完成项 ===================== */
 .coc-completed {
   opacity: 0.55;
 }
@@ -343,23 +316,13 @@ body {
 .coc-hero-title {
   color: var(--text-main);
   font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-/* ===================== 脉冲高亮（即将完成）===================== */
-@keyframes coc-pulse {
-  0%, 100% { box-shadow: var(--shadow-panel), 0 0 0 0 var(--color-danger-bg); }
-  50% { box-shadow: var(--shadow-panel), 0 0 0 4px var(--color-danger-bg); }
-}
-
-.coc-pulse {
-  animation: coc-pulse 2s ease-in-out infinite;
+  letter-spacing: 0.01em;
 }
 
 /* ===================== 折叠面板 ===================== */
 .collapsible-content {
   overflow: hidden;
-  transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
 }
 
 .collapsible-content.collapsed {
@@ -372,38 +335,37 @@ body {
   opacity: 1;
 }
 
-/* ===================== 入场动画 ===================== */
+/* ===================== 入场动画（简化）===================== */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-up {
-  animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeUp 0.25s ease-out both;
 }
-
-.animate-fade-up:nth-child(1) { animation-delay: 0ms; }
-.animate-fade-up:nth-child(2) { animation-delay: 60ms; }
-.animate-fade-up:nth-child(3) { animation-delay: 120ms; }
-.animate-fade-up:nth-child(4) { animation-delay: 180ms; }
-.animate-fade-up:nth-child(5) { animation-delay: 240ms; }
-.animate-fade-up:nth-child(6) { animation-delay: 300ms; }
 
 /* ===================== Toast ===================== */
 .toast-success {
-  background: var(--bg-panel);
-  border: 2px solid var(--color-success);
-  color: var(--text-main);
-  border-radius: 8px;
-  box-shadow: var(--shadow-panel);
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--color-success) !important;
+  color: var(--text-main) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-panel) !important;
+  padding: 10px 14px !important;
+  font-size: 13px !important;
+  max-width: 90vw !important;
 }
 
 .toast-error {
-  background: var(--bg-panel);
-  border: 2px solid var(--color-danger);
-  color: var(--text-main);
-  border-radius: 8px;
-  box-shadow: var(--shadow-panel);
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--color-danger) !important;
+  color: var(--text-main) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-panel) !important;
+  padding: 10px 14px !important;
+  font-size: 13px !important;
+  max-width: 90vw !important;
 }
 
 /* ===================== 安全区域适配 ===================== */
@@ -427,8 +389,8 @@ body {
 
 /* ===================== 移动端优化 ===================== */
 @media (max-width: 768px) {
-  .coc-panel { border-radius: 8px; }
-  .coc-card { border-radius: 8px; }
+  .coc-panel { border-radius: 6px; }
+  .coc-card { border-radius: 6px; }
   button { min-height: 40px; }
   ::-webkit-scrollbar { display: none; }
 }
@@ -444,6 +406,7 @@ body {
 .text-gold { color: var(--color-gold); }
 .text-success { color: var(--color-success); }
 .text-danger { color: var(--color-danger); }
+.text-warning { color: var(--color-warning); }
 .text-countdown { color: var(--color-countdown); }
 .bg-panel { background: var(--bg-panel); }
 .bg-content { background: var(--bg-content); }

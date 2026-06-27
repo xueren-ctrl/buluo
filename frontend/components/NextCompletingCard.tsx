@@ -1,5 +1,5 @@
 /**
- * 即将完成高亮卡片 — 倒计时最短的一项（CoC 羊皮纸风格）
+ * 即将完成高亮卡片 — 倒计时最短的一项（CoC 简约风格）
  */
 import type { UpgradeItem } from "@/types";
 import { getUpgradeDisplay } from "@/lib/coc-assets";
@@ -11,13 +11,16 @@ export function NextCompletingCard({ item }: { item: UpgradeItem }) {
   const display = getUpgradeDisplay(item.category, item.data_id ?? null, item.item_level);
 
   return (
-    <div className={`coc-card p-3 ${done ? "coc-completed" : "coc-pulse"}`}>
+    <div
+      className={`coc-card p-3 ${done ? "coc-completed" : ""}`}
+      style={!done ? { borderColor: "var(--color-danger)" } : undefined}
+    >
       <div className="flex items-center gap-3">
         <div
-          className="w-10 h-10 rounded flex items-center justify-center text-xl"
+          className="w-10 h-10 rounded flex items-center justify-center text-xl flex-shrink-0"
           style={{
             background: "var(--bg-panel-alt)",
-            border: "1.5px solid var(--border-dark)",
+            border: "1px solid var(--border-gold)",
           }}
         >
           {display.icon}
@@ -29,7 +32,7 @@ export function NextCompletingCard({ item }: { item: UpgradeItem }) {
           </p>
         </div>
         {!done && (
-          <div className="coc-countdown coc-countdown-large coc-countdown-urgent">
+          <div className="coc-countdown coc-countdown-large coc-countdown-urgent flex-shrink-0">
             {formatCompactRemaining(remaining)}
           </div>
         )}
