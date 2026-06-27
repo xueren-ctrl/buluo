@@ -318,6 +318,47 @@ export default function HomePage() {
     toast.success("所有数据已清除", { className: "toast-success" });
   };
 
+  // ── 根据导出时间重算所有完成时间 ──────
+  const handleRecalc = async () => {
+    if (upgrades.length === 0) {
+      toast.error("没有可重算的升级数据", { className: "toast-error" });
+      return;
+    }
+    const exportTs = new Date(exportTime).getTime();
+    if (!Number.isFinite(exportTs)) {
+      toast.error("导出时间格式不正确", { className: "toast-error" });
+      return;
+    }
+    // 用 导出时间 + timer_seconds 重算每个升级的完成时间
+    const recalculated = upgrades.map((u) => ({
+      ...u,
+      finish_time: new Date(exportTs + (u.timer_seconds || 0) * 1000).toISOString(),
+    }));
+    setUpgrades(recalculated);
+
+    // 同步更新村庄快照里的完成时间
+    if (village) {
+      const updatedVillage: VillageSnapshot = {
+        ...village,
+        capturedAt: new Date(exportTs).toISOString(),
+        items: village.items.map((item) =>
+          item.isUpgrading && item.timerSeconds
+            ? { ...item, finishTime: new Date(exportTs + item.timerSeconds * 1000).toISOString() }
+            : item
+        ),
+      };
+      setVillage(updatedVillage);
+      await saveVillage(updatedVillage);
+    }
+
+    const completedCount = recalculated.filter((u) => getRemainingSeconds(u.finish_time) <= 0).length;
+    const activeCount = recalculated.length - completedCount;
+    toast.success(
+      `已根据导出时间重算: ${activeCount} 项进行中, ${completedCount} 项已完成`,
+      { className: "toast-success" }
+    );
+  };
+
   // ── 排序与分类 ───────────────────────
   const sortedUpgrades = useMemo(() =>
     [...upgrades].sort((a, b) => new Date(a.finish_time).getTime() - new Date(b.finish_time).getTime()),
@@ -408,9 +449,11 @@ export default function HomePage() {
           jsonInput={jsonInput}
           onJsonChange={setJsonInput}
           onSubmit={handleSubmit}
+          onRecalc={handleRecalc}
           loading={loading}
           exportTime={exportTime}
           onExportTimeChange={setExportTime}
+          hasUpgrades={upgrades.length > 0}
         />
 
         {/* ======== 升级数据面板 ======== */}

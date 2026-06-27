@@ -7,16 +7,20 @@ export function UploadSection({
   jsonInput,
   onJsonChange,
   onSubmit,
+  onRecalc,
   loading,
   exportTime,
   onExportTimeChange,
+  hasUpgrades,
 }: {
   jsonInput: string;
   onJsonChange: (v: string) => void;
   onSubmit: () => void;
+  onRecalc: () => void;
   loading: boolean;
   exportTime: string;
   onExportTimeChange: (v: string) => void;
+  hasUpgrades: boolean;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const jsonRef = useRef<HTMLTextAreaElement>(null);
@@ -50,14 +54,26 @@ export function UploadSection({
           <label className="block text-xs text-dark-400 mb-1">
             📅 数据导出时间 <span className="text-amber-400">(不是刚刚导出的请修改)</span>
           </label>
-          <input
-            type="datetime-local"
-            value={exportTime}
-            onChange={(e) => onExportTimeChange(e.target.value)}
-            className="w-full bg-dark-900/60 border border-dark-600 rounded-xl px-3.5 py-2.5 text-xs text-dark-100 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition-all"
-          />
+          <div className="flex gap-2">
+            <input
+              type="datetime-local"
+              value={exportTime}
+              onChange={(e) => onExportTimeChange(e.target.value)}
+              className="flex-1 bg-dark-900/60 border border-dark-600 rounded-xl px-3.5 py-2.5 text-xs text-dark-100 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition-all"
+            />
+            {hasUpgrades && (
+              <button
+                onClick={onRecalc}
+                disabled={loading}
+                className="btn-secondary px-4 py-2.5 text-xs whitespace-nowrap"
+                title="不改 JSON，只用导出时间重算已有数据的完成时间"
+              >
+                🔁 重算
+              </button>
+            )}
+          </div>
           <p className="text-[10px] text-dark-500 mt-1">
-            倒计时从这里开始算，确保准确。默认为当前时间。
+            倒计时从这里开始算。导入旧数据后改时间点「重算」即可修正。
           </p>
         </div>
 
