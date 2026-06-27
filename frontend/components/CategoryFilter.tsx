@@ -1,5 +1,5 @@
 /**
- * 分类筛选 chips — 全部 + 各分类
+ * 分类筛选 chips — CoC 羊皮纸风格
  */
 import { ITEM_CATEGORY_LABELS } from "@/lib/coc-assets";
 
@@ -43,11 +43,7 @@ function CategoryChip({ label, active, count, onClick }: {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
-        active
-          ? "bg-brand-600 text-white"
-          : "bg-dark-800/60 text-dark-300 border border-dark-700/50 hover:border-brand-500/40"
-      }`}
+      className={active ? "coc-btn text-xs py-1.5 px-3" : "coc-btn-secondary text-xs py-1.5 px-3"}
     >
       {label} <span className="opacity-70">{count}</span>
     </button>

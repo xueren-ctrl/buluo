@@ -2,60 +2,112 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===================== 主题 CSS 变量 ===================== */
+/* ===================== 部落冲突官方 UI 主题变量 ===================== */
+/* 羊皮纸 + 石头质感，克制无堆砌 */
 :root {
-  /* 浅色主题 */
-  --bg-primary: #FAF8F3;
-  --bg-secondary: #F0EBE0;
-  --card-bg: #FFFFFF;
-  --card-border: #E8E0D0;
-  --color-gold: #C8922A;
-  --color-gold-light: #F0B429;
-  --color-gold-alpha: rgba(200, 146, 42, 0.12);
-  --color-blue: #2563EB;
-  --text-primary: #1C1408;
-  --text-secondary: #6B5E4E;
-  --text-muted: #9C8E7E;
-  --color-success: #16A34A;
-  --color-danger: #DC2626;
-  --input-bg: #FDFCF9;
-  --toggle-off: #D1C9BD;
-  --shadow-card: 0 2px 12px rgba(28, 20, 8, 0.08);
-  --shadow-hover: 0 8px 32px rgba(28, 20, 8, 0.12);
+  /* 浅色（羊皮纸）*/
+  --bg-page: #F2E8D0;
+  --bg-panel: #EDE0C4;
+  --bg-panel-alt: #E8D9B8;
+  --bg-content: #F5EDD8;
+  --bg-input: #FAF4E4;
+
+  --text-main: #2A1A08;
+  --text-sub: #5C4008;
+  --text-muted: #8B7355;
+
+  --border-gold: #8B6914;
+  --border-dark: #5C4008;
+  --border-light: #C4A85C;
+
+  --color-gold: #8B6914;
+  --color-gold-light: #C4A85C;
+  --color-gold-bg: linear-gradient(180deg, #C4A85C 0%, #8B6914 100%);
+
+  /* 按钮游戏绿 */
+  --btn-green: linear-gradient(180deg, #4A8C28 0%, #2D5A18 100%);
+  --btn-green-border: #1A3A0C;
+  --btn-green-shadow: #0F2208;
+
+  /* 倒计时数字深蓝 */
+  --color-countdown: #1A3A6B;
+
+  /* 状态色 */
+  --color-success: #3A7820;
+  --color-success-bg: rgba(58, 120, 32, 0.12);
+  --color-danger: #8B2500;
+  --color-danger-bg: rgba(139, 37, 0, 0.10);
+  --color-warning: #8B6914;
+  --color-warning-bg: rgba(139, 105, 20, 0.12);
+
+  /* Toggle */
+  --toggle-off-bg: #5C4008;
+  --toggle-on-bg: #3A7820;
+  --toggle-knob: #F5EDD8;
+
+  /* 面板阴影（石头立体感）*/
+  --shadow-panel: 0 3px 0 #5C4008;
+  --shadow-btn: 0 3px 0 #0F2208;
+  --shadow-hover: 0 5px 0 #5C4008;
+
+  /* 分隔线 */
+  --divider: #C4A85C;
 }
 
 :root[data-theme="dark"] {
-  /* 深色主题 */
-  --bg-primary: #0F1117;
-  --bg-secondary: #161B27;
-  --card-bg: #1A1F2E;
-  --card-border: #2D3748;
-  --color-gold: #F0B429;
-  --color-gold-light: #FBBF24;
-  --color-gold-alpha: rgba(240, 180, 41, 0.12);
-  --color-blue: #60A5FA;
-  --text-primary: #F0EBE3;
-  --text-secondary: #9CA3AF;
-  --text-muted: #6B7280;
-  --color-success: #4ADE80;
-  --color-danger: #EF4444;
-  --input-bg: #141820;
-  --toggle-off: #374151;
-  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
-  --shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.5);
+  /* 深色（深棕压暗）*/
+  --bg-page: #0D0A06;
+  --bg-panel: #1E1608;
+  --bg-panel-alt: #281D0C;
+  --bg-content: #1A1408;
+  --bg-input: #15100A;
+
+  --text-main: #E8D9B8;
+  --text-sub: #C4A85C;
+  --text-muted: #8B7355;
+
+  --border-gold: #8B6914;
+  --border-dark: #3A2A10;
+  --border-light: #5C4008;
+
+  --color-gold: #C4A85C;
+  --color-gold-light: #E8D9B8;
+  --color-gold-bg: linear-gradient(180deg, #8B6914 0%, #5C4008 100%);
+
+  --btn-green: linear-gradient(180deg, #3A7820 0%, #1A3A0C 100%);
+  --btn-green-border: #0F2208;
+  --btn-green-shadow: #050C02;
+
+  --color-countdown: #6B8FB5;
+
+  --color-success: #4A8C28;
+  --color-success-bg: rgba(74, 140, 40, 0.15);
+  --color-danger: #C44A28;
+  --color-danger-bg: rgba(196, 74, 40, 0.12);
+  --color-warning: #C4A85C;
+  --color-warning-bg: rgba(196, 168, 92, 0.12);
+
+  --toggle-off-bg: #3A2A10;
+  --toggle-on-bg: #3A7820;
+  --toggle-knob: #E8D9B8;
+
+  --shadow-panel: 0 3px 0 #050C02;
+  --shadow-btn: 0 3px 0 #050C02;
+  --shadow-hover: 0 5px 0 #050C02;
+
+  --divider: #5C4008;
 }
 
 /* ===================== 全局基础 ===================== */
 body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: var(--bg-page);
+  color: var(--text-main);
   font-family: "Noto Sans SC", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition: background 0.3s, color 0.3s;
 }
 
-/* 数字 / 倒计时字体 */
 .font-mono-num {
   font-family: "Inter", monospace;
   font-variant-numeric: tabular-nums;
@@ -69,133 +121,242 @@ body {
   }
 }
 
-/* ===================== 自定义滚动条 ===================== */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-gold);
-  border-radius: 9999px;
-  opacity: 0.5;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gold-light);
-}
+/* ===================== 滚动条 ===================== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-panel); }
+::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 9999px; }
 
-/* ===================== 基础卡片 ===================== */
-.glass-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 20px;
-  box-shadow: var(--shadow-card);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.glass-card:hover {
-  border-color: var(--color-gold-alpha);
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-1px);
-}
-
-/* ===================== 发光边框 ===================== */
-.glow-border {
-  border: 1px solid var(--color-gold-alpha);
-  box-shadow: 0 0 15px var(--color-gold-alpha);
-}
-
-/* ===================== 渐变背景 ===================== */
-.gradient-bg {
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
-  background-attachment: fixed;
-}
-
-/* ===================== 骨架屏加载动画 ===================== */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton {
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  background-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--color-gold-alpha) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-/* ===================== 分类色光晕 ===================== */
-.glow-amber { box-shadow: 0 0 20px rgba(245, 158, 11, 0.1); }
-.glow-indigo { box-shadow: 0 0 20px rgba(99, 102, 241, 0.1); }
-.glow-yellow { box-shadow: 0 0 20px rgba(234, 179, 8, 0.15); }
-.glow-emerald { box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); }
-.glow-violet { box-shadow: 0 0 20px rgba(139, 92, 246, 0.1); }
-
-/* ===================== 脉冲高亮 (即将完成) ===================== */
-@keyframes urgent-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.15); }
-  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-}
-
-.animate-urgent {
-  animation: urgent-pulse 2s ease-in-out infinite;
-}
-
-/* ===================== 升级进度条 ===================== */
-.progress-bar {
-  height: 6px;
-  background: var(--bg-secondary);
-  border-radius: 9999px;
+/* ===================== 面板（CoC 石头质感）===================== */
+.coc-panel {
+  background: var(--bg-panel);
+  border: 2.5px solid var(--border-gold);
+  border-radius: 10px;
+  box-shadow: var(--shadow-panel);
   overflow: hidden;
 }
 
-.progress-bar-fill {
-  transition: width 1s linear, background-color 0.5s ease;
+.coc-panel-header {
+  background: var(--color-gold-bg);
+  border-bottom: 2px solid var(--border-dark);
+  padding: 8px 14px;
+  color: #F5EDD8;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
 }
 
-/* ===================== Hero 标题文字渐变 ===================== */
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+.coc-panel-body {
+  background: var(--bg-content);
+  padding: 14px;
 }
 
-.gradient-title {
-  background: linear-gradient(
-    90deg,
-    var(--color-gold-light),
-    var(--color-gold),
-    var(--color-gold-light),
-    var(--color-gold),
-    var(--color-gold-light)
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradient-shift 8s linear infinite;
+/* ===================== 简化卡片（无标题栏）===================== */
+.coc-card {
+  background: var(--bg-panel);
+  border: 2px solid var(--border-gold);
+  border-radius: 10px;
+  box-shadow: var(--shadow-panel);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ===================== 数字翻转动画 ===================== */
-@keyframes digit-flip {
-  0% { transform: translateY(0); opacity: 1; }
-  45% { transform: translateY(-4px); opacity: 0; }
-  55% { transform: translateY(4px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+.coc-card:hover {
+  box-shadow: var(--shadow-hover);
 }
 
-.animate-digit-flip {
-  animation: digit-flip 0.3s ease-in-out;
+.coc-card:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 var(--border-dark);
 }
 
-/* ===================== 折叠面板动画 ===================== */
+/* ===================== 按钮（CoC 游戏绿）===================== */
+.coc-btn {
+  background: var(--btn-green);
+  border: 2px solid var(--btn-green-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-btn);
+  color: #F5EDD8;
+  font-weight: 700;
+  padding: 10px 16px;
+  transition: all 0.15s ease;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+
+.coc-btn:hover {
+  filter: brightness(1.1);
+}
+
+.coc-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--btn-green-shadow);
+}
+
+.coc-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+/* 次级按钮（棕色）*/
+.coc-btn-secondary {
+  background: var(--bg-panel-alt);
+  border: 2px solid var(--border-dark);
+  border-radius: 8px;
+  box-shadow: 0 2px 0 var(--border-dark);
+  color: var(--text-main);
+  font-weight: 600;
+  padding: 8px 14px;
+  transition: all 0.15s ease;
+}
+
+.coc-btn-secondary:hover { filter: brightness(1.05); }
+.coc-btn-secondary:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 var(--border-dark);
+}
+
+/* ===================== 输入框 ===================== */
+.coc-input {
+  background: var(--bg-input);
+  border: 2px solid var(--border-gold);
+  border-radius: 8px;
+  color: var(--text-main);
+  padding: 10px 12px;
+  transition: border-color 0.2s ease;
+  font-family: "Inter", monospace;
+}
+
+.coc-input:focus {
+  outline: none;
+  border-color: var(--color-gold-light);
+  box-shadow: 0 0 0 2px var(--color-warning-bg);
+}
+
+.coc-input::placeholder {
+  color: var(--text-muted);
+  font-family: "Noto Sans SC", sans-serif;
+}
+
+/* ===================== Toggle 开关 ===================== */
+.coc-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 9999px;
+  background: var(--toggle-off-bg);
+  border: 1.5px solid var(--border-dark);
+  transition: background 0.25s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.coc-toggle.on {
+  background: var(--toggle-on-bg);
+  border-color: var(--btn-green-border);
+}
+
+.coc-toggle .coc-toggle-knob {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--toggle-knob);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.coc-toggle.on .coc-toggle-knob {
+  transform: translateX(20px);
+}
+
+/* ===================== 倒计时数字 ===================== */
+.coc-countdown {
+  color: var(--color-countdown);
+  font-family: "Inter", monospace;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.coc-countdown-large {
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.coc-countdown-urgent {
+  color: var(--color-danger);
+}
+
+/* ===================== 标签 ===================== */
+.coc-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.coc-tag-done {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.coc-tag-warn {
+  background: var(--color-warning-bg);
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+}
+
+/* ===================== 分隔行（分类小标题）===================== */
+.coc-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.coc-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--divider);
+  opacity: 0.5;
+}
+
+/* ===================== 已完成项样式 ===================== */
+.coc-completed {
+  opacity: 0.55;
+}
+
+.coc-completed .coc-item-name {
+  text-decoration: line-through;
+}
+
+/* ===================== Hero 标题 ===================== */
+.coc-hero-title {
+  color: var(--text-main);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ===================== 脉冲高亮（即将完成）===================== */
+@keyframes coc-pulse {
+  0%, 100% { box-shadow: var(--shadow-panel), 0 0 0 0 var(--color-danger-bg); }
+  50% { box-shadow: var(--shadow-panel), 0 0 0 4px var(--color-danger-bg); }
+}
+
+.coc-pulse {
+  animation: coc-pulse 2s ease-in-out infinite;
+}
+
+/* ===================== 折叠面板 ===================== */
 .collapsible-content {
   overflow: hidden;
   transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
@@ -207,234 +368,45 @@ body {
 }
 
 .collapsible-content.expanded {
-  max-height: 1000px;
+  max-height: 2000px;
   opacity: 1;
 }
 
-/* ===================== 统计卡片 ===================== */
-.stat-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 20px;
-  box-shadow: var(--shadow-card);
-  padding: 1rem;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.stat-card:hover {
-  transform: scale(1.02);
-}
-.stat-card:active {
-  transform: scale(0.98);
-}
-
-/* ===================== 升级项卡片 ===================== */
-.upgrade-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 20px;
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.upgrade-card:hover {
-  transform: translateY(-2px) scale(1.005);
-  border-color: var(--color-gold-alpha);
-}
-
-/* ===================== 按钮样式 ===================== */
-.btn-primary {
-  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-light));
-  color: #1C1408;
-  font-weight: 600;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px var(--color-gold-alpha);
-}
-
-.btn-primary:hover {
-  transform: scale(1.02);
-}
-
-.btn-primary:active {
-  transform: scale(0.97);
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  color: var(--text-primary);
-  font-weight: 500;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-  border-color: var(--color-gold);
-}
-
-.btn-secondary:active {
-  transform: scale(0.97);
-}
-
-/* ===================== 输入框 ===================== */
-.input-field {
-  background: var(--input-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  color: var(--text-primary);
-  transition: border-color 0.2s ease;
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: var(--color-gold);
-  box-shadow: 0 0 0 3px var(--color-gold-alpha);
-}
-
-/* ===================== Toggle 开关 ===================== */
-.toggle-switch {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  border-radius: 9999px;
-  background: var(--toggle-off);
-  transition: background 0.3s ease;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.toggle-switch.on {
-  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-light));
-}
-
-.toggle-switch .toggle-knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 9999px;
-  background: #FFFFFF;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.toggle-switch.on .toggle-knob {
-  transform: translateX(20px);
-}
-
-/* ===================== 底部导航栏 ===================== */
-.nav-bar {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  background: var(--card-bg);
-  border-top: 1px solid var(--color-gold-alpha);
-}
-
-/* ===================== Toast 增强 ===================== */
-.toast-success {
-  background: var(--card-bg);
-  border: 1px solid var(--color-success);
-  color: var(--text-primary);
-  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.15);
-}
-
-.toast-error {
-  background: var(--card-bg);
-  border: 1px solid var(--color-danger);
-  color: var(--text-primary);
-  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
-}
-
-/* ===================== 信息层级: 主内容聚焦 ===================== */
-.focus-zone {
-  transition: all 0.3s;
-}
-
-.focus-zone.dimmed {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-/* ===================== 卡片入场动画 fadeUp ===================== */
+/* ===================== 入场动画 ===================== */
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-up {
-  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* 各卡片错开 60ms */
 .animate-fade-up:nth-child(1) { animation-delay: 0ms; }
 .animate-fade-up:nth-child(2) { animation-delay: 60ms; }
 .animate-fade-up:nth-child(3) { animation-delay: 120ms; }
 .animate-fade-up:nth-child(4) { animation-delay: 180ms; }
 .animate-fade-up:nth-child(5) { animation-delay: 240ms; }
 .animate-fade-up:nth-child(6) { animation-delay: 300ms; }
-.animate-fade-up:nth-child(7) { animation-delay: 360ms; }
-.animate-fade-up:nth-child(8) { animation-delay: 420ms; }
 
-/* ===================== Tabular nums (倒计时) ===================== */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
+/* ===================== Toast ===================== */
+.toast-success {
+  background: var(--bg-panel);
+  border: 2px solid var(--color-success);
+  color: var(--text-main);
+  border-radius: 8px;
+  box-shadow: var(--shadow-panel);
 }
 
-/* ===================== 移动端优化 ===================== */
-@media (max-width: 768px) {
-  .glass-card {
-    border-radius: 16px;
-  }
-  .upgrade-card {
-    padding: 0.75rem;
-  }
-  main {
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
-  }
-  .btn-primary, .btn-secondary {
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
-    font-size: 0.875rem;
-    min-height: 44px;
-  }
-  .stat-card {
-    padding: 0.75rem;
-  }
-  ::-webkit-scrollbar {
-    display: none;
-  }
-  .stat-card:active,
-  .glass-card:active {
-    transform: scale(0.98);
-  }
+.toast-error {
+  background: var(--bg-panel);
+  border: 2px solid var(--color-danger);
+  color: var(--text-main);
+  border-radius: 8px;
+  box-shadow: var(--shadow-panel);
 }
 
-/* ===================== 触摸目标最小尺寸 (44px) ===================== */
-button {
-  min-height: 36px;
-}
-@media (max-width: 768px) {
-  button {
-    min-height: 40px;
-  }
-}
-
-/* ===================== 安全区域适配 (iPhone 刘海屏) ===================== */
+/* ===================== 安全区域适配 ===================== */
 @supports (padding: max(0px)) {
   main {
     padding-left: max(0.75rem, env(safe-area-inset-left)) !important;
@@ -444,37 +416,36 @@ button {
   }
 }
 
-/* App shell: standalone 模式下额外顶部留白（状态栏） */
-.app-shell {
-  padding-top: 1.25rem;
-}
+.app-shell { padding-top: 1.25rem; }
 @media (display-mode: standalone) {
-  .app-shell {
-    padding-top: max(1.5rem, env(safe-area-inset-top));
-  }
+  .app-shell { padding-top: max(1.5rem, env(safe-area-inset-top)); }
 }
 
-/* 底部安全区辅助类 */
 .safe-area-bottom {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
-/* ===================== 防止 iOS Safari 输入缩放 ===================== */
+/* ===================== 移动端优化 ===================== */
+@media (max-width: 768px) {
+  .coc-panel { border-radius: 8px; }
+  .coc-card { border-radius: 8px; }
+  button { min-height: 40px; }
+  ::-webkit-scrollbar { display: none; }
+}
+
 @media screen and (orientation: portrait) {
-  input, textarea {
-    font-size: 16px !important;
-  }
+  input, textarea { font-size: 16px !important; }
 }
 
 /* ===================== 文字颜色辅助类 ===================== */
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
+.text-main { color: var(--text-main); }
+.text-sub { color: var(--text-sub); }
 .text-muted { color: var(--text-muted); }
 .text-gold { color: var(--color-gold); }
-.text-gold-light { color: var(--color-gold-light); }
 .text-success { color: var(--color-success); }
 .text-danger { color: var(--color-danger); }
-.bg-card { background: var(--card-bg); }
-.bg-primary { background: var(--bg-primary); }
-.bg-secondary { background: var(--bg-secondary); }
-.border-card { border-color: var(--card-border); }
+.text-countdown { color: var(--color-countdown); }
+.bg-panel { background: var(--bg-panel); }
+.bg-content { background: var(--bg-content); }
+.border-gold { border-color: var(--border-gold); }
+.border-dark { border-color: var(--border-dark); }

@@ -1,12 +1,11 @@
 /**
- * 升级进行中列表 — 按分类分组显示
+ * 升级进行中列表 — 按分类分组显示（CoC 羊皮纸风格分隔行）
  */
 import type { UpgradeItem } from "@/types";
 import { UpgradeCard } from "./UpgradeCard";
 import { SectionTitle } from "./SectionTitle";
 import { EmptyState } from "./EmptyState";
 
-// 分类显示顺序 + 中文名 + 图标
 const CATEGORY_ORDER: { key: string; label: string; icon: string }[] = [
   { key: "buildings", label: "建筑", icon: "🏰" },
   { key: "heroes", label: "英雄", icon: "⚔️" },
@@ -25,13 +24,12 @@ export function UpgradeList({ items }: { items: UpgradeItem[] }) {
   if (items.length === 0) {
     return (
       <>
-        <SectionTitle title="📊 升级进行中" count={0} />
-        <EmptyState emoji="🎉" title="当前没有升级项目" desc="所有工人和实验室都在空闲" />
+        <SectionTitle title="升级进行中" count={0} />
+        <EmptyState emoji="" title="当前没有升级项目" desc="所有工人和实验室都在空闲" />
       </>
     );
   }
 
-  // 按 category 分组
   const groups = new Map<string, UpgradeItem[]>();
   for (const item of items) {
     const arr = groups.get(item.category) ?? [];
@@ -39,7 +37,6 @@ export function UpgradeList({ items }: { items: UpgradeItem[] }) {
     groups.set(item.category, arr);
   }
 
-  // 按 CATEGORY_ORDER 排序分组，未知分类放最后
   const sortedGroups = Array.from(groups.entries()).sort((a, b) => {
     const idxA = CATEGORY_ORDER.findIndex((c) => c.key === a[0]);
     const idxB = CATEGORY_ORDER.findIndex((c) => c.key === b[0]);
@@ -48,19 +45,15 @@ export function UpgradeList({ items }: { items: UpgradeItem[] }) {
 
   return (
     <>
-      <SectionTitle title="📊 升级进行中" count={items.length} />
-      <div className="space-y-4">
+      <SectionTitle title="升级进行中" count={items.length} />
+      <div className="space-y-3">
         {sortedGroups.map(([category, groupItems]) => {
           const meta = CATEGORY_ORDER.find((c) => c.key === category);
           const label = meta ? `${meta.icon} ${meta.label}` : category;
           return (
             <div key={category}>
-              <div className="flex items-center gap-2 mb-2 px-1">
-                <span className="text-xs font-bold text-dark-300 uppercase tracking-wider">
-                  {label}
-                </span>
-                <span className="text-xs text-dark-500">({groupItems.length})</span>
-                <div className="flex-1 h-px bg-dark-700/50" />
+              <div className="coc-divider">
+                {label} ({groupItems.length})
               </div>
               <div className="space-y-2">
                 {groupItems.map((upg) => (

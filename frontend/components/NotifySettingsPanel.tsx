@@ -1,5 +1,5 @@
 /**
- * 通知设置面板 — 浏览器权限 + 提醒时机 + DND + 去重重置
+ * 通知设置面板 — CoC 羊皮纸风格
  */
 import { useState } from "react";
 import type { NotifyStatus } from "@/lib/notification-system";
@@ -32,50 +32,48 @@ export function NotifySettingsPanel({
   if (!settings) return null;
 
   return (
-    <section className="w-full glass-card p-4 mb-4 border-dark-700/50">
+    <section className="coc-panel mb-4">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between text-sm font-semibold text-dark-200"
+        className="coc-panel-header w-full flex items-center justify-between"
       >
-        <span>🔔 通知设置</span>
-        <span className={`text-xs text-dark-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>▼</span>
+        <span>通知设置</span>
+        <span className={`text-xs transition-transform duration-200 ${open ? "rotate-180" : ""}`}>▼</span>
       </button>
 
-      <div className={`collapsible-content mt-3 ${open ? "expanded" : "collapsed"}`}>
-        <div className="space-y-3">
+      <div className={`collapsible-content ${open ? "expanded" : "collapsed"}`}>
+        <div className="coc-panel-body space-y-3">
           {/* 浏览器通知权限 */}
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-dark-400">
+              <span className="text-sub">
                 浏览器通知
-                {!status.browserNotifAvailable && <span className="text-red-400 ml-1">(不支持)</span>}
-                {status.browserNotifAvailable && !status.browserNotifGranted && <span className="text-amber-400 ml-1">(未授权)</span>}
-                {status.browserNotifGranted && <span className="text-green-400 ml-1">✓</span>}
+                {!status.browserNotifAvailable && <span className="text-danger ml-1">(不支持)</span>}
+                {status.browserNotifAvailable && !status.browserNotifGranted && <span className="text-warning ml-1">(未授权)</span>}
+                {status.browserNotifGranted && <span className="text-success ml-1">✓</span>}
               </span>
               <button
                 onClick={onEnableNotify}
                 disabled={!status.browserNotifAvailable}
-                className={`px-3 py-1 rounded-lg transition-colors ${
+                className={
                   status.browserNotifGranted
-                    ? "bg-green-500/20 text-green-400"
+                    ? "coc-btn-secondary text-xs py-1 px-3 text-success"
                     : status.browserNotifAvailable
-                      ? "bg-brand-600 hover:bg-brand-500 text-white"
-                      : "bg-dark-700 text-dark-600 cursor-not-allowed"
-                }`}
+                      ? "coc-btn text-xs py-1 px-3"
+                      : "coc-btn-secondary text-xs py-1 px-3 opacity-50 cursor-not-allowed"
+                }
               >
                 {status.browserNotifGranted ? "已开启" : "申请权限"}
               </button>
             </div>
-            {/* 不支持原因 + 引导文案 */}
             {status.unsupportedReason && (
-              <div className="text-[11px] text-amber-400/80 leading-relaxed pl-1">
+              <div className="text-[11px] text-warning leading-relaxed pl-1">
                 <p>⚠️ {status.unsupportedReason}</p>
-                {status.hint && <p className="text-dark-400 mt-0.5">{status.hint}</p>}
+                {status.hint && <p className="text-muted mt-0.5">{status.hint}</p>}
               </div>
             )}
-            {/* 已安装 PWA 提示 */}
             {status.isInstalled && (
-              <div className="text-[11px] text-green-400/70 pl-1">
+              <div className="text-[11px] text-success pl-1">
                 ✓ 已以 PWA 模式启动，可获得最佳通知体验
               </div>
             )}
@@ -84,22 +82,25 @@ export function NotifySettingsPanel({
           {/* 后台同步状态 */}
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-dark-400">
+              <span className="text-sub">
                 后台同步（页面关闭时提醒）
-                {!status.periodicSyncSupported && <span className="text-amber-400 ml-1">(不支持)</span>}
-                {status.periodicSyncSupported && <span className="text-green-400 ml-1">✓</span>}
+                {!status.periodicSyncSupported && <span className="text-warning ml-1">(不支持)</span>}
+                {status.periodicSyncSupported && <span className="text-success ml-1">✓</span>}
               </span>
             </div>
             {!status.periodicSyncSupported && (
-              <div className="text-[11px] text-dark-500 leading-relaxed pl-1">
+              <div className="text-[11px] text-muted leading-relaxed pl-1">
                 仅 Chrome / Edge 浏览器 + 安装 PWA 后支持。其他浏览器请保持页面打开，或重开页面时自动补发漏掉的通知。
               </div>
             )}
           </div>
 
           {/* 提醒层级 */}
-          <div className="space-y-2 pt-2 border-t border-dark-700/50">
-            <p className="text-xs text-dark-500 font-semibold">提醒时机</p>
+          <div
+            className="space-y-2 pt-2"
+            style={{ borderTop: "1px solid var(--divider)" }}
+          >
+            <p className="text-xs text-muted font-semibold">提醒时机</p>
             <ToggleRow
               label="提前 30 分钟"
               checked={settings.enablePre30m}
@@ -128,19 +129,22 @@ export function NotifySettingsPanel({
           </div>
 
           {/* 夜间免打扰 */}
-          <div className="space-y-2 pt-2 border-t border-dark-700/50">
+          <div
+            className="space-y-2 pt-2"
+            style={{ borderTop: "1px solid var(--divider)" }}
+          >
             <ToggleRow
               label="夜间免打扰（DND）"
               checked={settings.dndEnabled}
               onChange={(v) => onUpdateSettings({ dndEnabled: v })}
             />
             {settings.dndEnabled && (
-              <div className="flex items-center gap-2 text-xs text-dark-400 pl-1">
+              <div className="flex items-center gap-2 text-xs text-sub pl-1">
                 <span>免扰时段</span>
                 <select
                   value={settings.dndStart}
                   onChange={(e) => onUpdateSettings({ dndStart: Number(e.target.value) })}
-                  className="bg-dark-900 border border-dark-600 rounded px-2 py-1 text-dark-200"
+                  className="coc-input text-xs py-1 px-2"
                 >
                   {Array.from({ length: 24 }, (_, i) => <option key={i} value={i}>{String(i).padStart(2, "0")}:00</option>)}
                 </select>
@@ -148,7 +152,7 @@ export function NotifySettingsPanel({
                 <select
                   value={settings.dndEnd}
                   onChange={(e) => onUpdateSettings({ dndEnd: Number(e.target.value) })}
-                  className="bg-dark-900 border border-dark-600 rounded px-2 py-1 text-dark-200"
+                  className="coc-input text-xs py-1 px-2"
                 >
                   {Array.from({ length: 24 }, (_, i) => <option key={i} value={i}>{String(i).padStart(2, "0")}:00</option>)}
                 </select>
@@ -157,13 +161,16 @@ export function NotifySettingsPanel({
           </div>
 
           {/* 上次提醒时间 + 重置去重 */}
-          <div className="flex items-center justify-between text-xs pt-2 border-t border-dark-700/50">
-            <span className="text-dark-500">
+          <div
+            className="flex items-center justify-between text-xs pt-2"
+            style={{ borderTop: "1px solid var(--divider)" }}
+          >
+            <span className="text-muted">
               上次提醒: {settings.last_notify_at ? formatRelativeTime(settings.last_notify_at) : "—"}
             </span>
             <button
               onClick={onClearNotifyState}
-              className="text-dark-400 hover:text-amber-400 transition-colors"
+              className="coc-btn-secondary text-xs py-1 px-3"
             >
               重置去重
             </button>
@@ -178,16 +185,14 @@ function ToggleRow({ label, checked, onChange }: {
   label: string; checked: boolean; onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-center justify-between text-xs text-dark-300 cursor-pointer">
+    <label className="flex items-center justify-between text-xs text-sub cursor-pointer">
       <span>{label}</span>
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative w-9 h-5 rounded-full transition-colors ${checked ? "bg-brand-600" : "bg-dark-700"}`}
+        className={`coc-toggle ${checked ? "on" : ""}`}
       >
-        <span
-          className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${checked ? "translate-x-4" : ""}`}
-        />
+        <span className="coc-toggle-knob" />
       </button>
     </label>
   );

@@ -477,30 +477,54 @@ export default function HomePage() {
 
         {/* ======== Hero 区域 ======== */}
         <header className="text-center mb-5">
-          <h1 className="text-2xl md:text-3xl font-black gradient-title mb-1.5 tracking-tight">
-            ⚔️ 部落冲突升级规划助手
+          <h1 className="coc-hero-title text-2xl md:text-3xl mb-1.5 tracking-tight">
+            部落冲突升级规划助手
           </h1>
-          <p className="text-dark-400 text-sm max-w-md mx-auto leading-relaxed">
+          <p className="text-sub text-sm max-w-md mx-auto leading-relaxed">
             上传 JSON → 自动分析基地 → 智能规划升级 → 本地通知提醒
           </p>
           {/* 实时时钟 — 证明页面每秒在刷新 */}
-          <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-800/50 border border-dark-700/50 text-xs text-dark-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-dark-300 tabular-nums">{new Date().toLocaleTimeString("zh-CN", { hour12: false })}</span>
+          <div
+            className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs"
+            style={{
+              background: "var(--bg-panel-alt)",
+              border: "1.5px solid var(--border-dark)",
+              color: "var(--text-sub)",
+            }}
+          >
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ background: "var(--color-success)" }}
+            />
+            <span className="coc-countdown">{new Date().toLocaleTimeString("zh-CN", { hour12: false })}</span>
           </div>
           {playerInfo && (
-            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-800/50 border border-dark-700/50 text-xs text-dark-400">
+            <div
+              className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs"
+              style={{
+                background: "var(--bg-panel-alt)",
+                border: "1.5px solid var(--border-dark)",
+                color: "var(--text-sub)",
+              }}
+            >
               <span>👤</span>
-              <span className="text-dark-300">{playerInfo.player_name || playerInfo.player_tag}</span>
+              <span className="text-main">{playerInfo.player_name || playerInfo.player_tag}</span>
               <span>·</span>
-              <span className="text-amber-400 font-medium">大本 Lv{playerInfo.town_hall_level}</span>
+              <span className="text-gold font-medium">大本 Lv{playerInfo.town_hall_level}</span>
             </div>
           )}
         </header>
 
         {/* ======== 数据过期警告 ======== */}
         {staleWarning && (
-          <div className="w-full mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2">
+          <div
+            className="w-full mb-3 p-3 rounded text-xs flex items-start gap-2"
+            style={{
+              background: "var(--color-warning-bg)",
+              border: "1.5px solid var(--color-warning)",
+              color: "var(--color-warning)",
+            }}
+          >
             <span className="text-base flex-shrink-0 mt-0.5">⚠️</span>
             <span>{getStaleMessage(lastUploadAt || undefined)}</span>
           </div>
@@ -508,17 +532,23 @@ export default function HomePage() {
 
         {/* ======== iOS 非 PWA 模式引导横幅 ======== */}
         {isIOS() && !isStandalone() && (
-          <div className="w-full mb-3 p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs">
+          <div
+            className="w-full mb-3 p-3 rounded text-xs"
+            style={{
+              background: "var(--color-warning-bg)",
+              border: "1.5px solid var(--color-warning)",
+            }}
+          >
             <div className="flex items-start gap-2">
               <span className="text-base flex-shrink-0 mt-0.5">📱</span>
               <div className="flex-1 min-w-0">
-                <p className="text-blue-300 font-semibold mb-1">
+                <p className="text-warning font-semibold mb-1">
                   请添加到主屏幕，才能接收升级完成通知
                 </p>
-                <p className="text-dark-400 text-[11px] leading-relaxed">
+                <p className="text-sub text-[11px] leading-relaxed">
                   iOS Safari 不支持网页通知，必须安装为 PWA 后才能在系统通知中心收到提醒。
                 </p>
-                <p className="text-blue-300 text-[11px] font-semibold mt-1">
+                <p className="text-warning text-[11px] font-semibold mt-1">
                   📲 点击底部分享按钮 → 添加到主屏幕
                 </p>
               </div>
@@ -531,25 +561,28 @@ export default function HomePage() {
           <>
             {/* 非 PWA 模式：引导安装 PWA（系统通知中心必须安装 PWA）*/}
             {!pwa.installed && !notifyStatus.unsupportedReason && (
-              <div className="w-full mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs">
+              <div
+                className="w-full mb-3 p-3 rounded text-xs"
+                style={{
+                  background: "var(--color-warning-bg)",
+                  border: "1.5px solid var(--color-warning)",
+                }}
+              >
                 <div className="flex items-start gap-2">
                   <span className="text-base flex-shrink-0 mt-0.5">📱</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-amber-300 font-semibold mb-1">
+                    <p className="text-warning font-semibold mb-1">
                       安装到主屏幕后，通知才能在手机通知中心弹出
                     </p>
-                    <p className="text-dark-400 text-[11px] leading-relaxed mb-2">
+                    <p className="text-sub text-[11px] leading-relaxed mb-2">
                       普通浏览器网页通知只在页面内显示，无法推送到系统通知中心。安装 PWA 后即使关闭页面也能收到通知。
                     </p>
                     {pwa.canInstall ? (
-                      <button
-                        onClick={pwa.showPrompt}
-                        className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold transition-colors"
-                      >
+                      <button onClick={pwa.showPrompt} className="coc-btn text-xs py-1.5 px-3">
                         安装到主屏幕
                       </button>
                     ) : (
-                      <p className="text-amber-300 text-[11px] font-semibold">
+                      <p className="text-warning text-[11px] font-semibold">
                         📲 Chrome 菜单 ⋮ → 添加到主屏幕
                       </p>
                     )}
@@ -560,17 +593,20 @@ export default function HomePage() {
 
             {/* PWA 模式但未授权通知 */}
             {pwa.installed && !notifyStatus.browserNotifGranted && !notifyStatus.unsupportedReason && (
-              <div className="w-full mb-3 p-3 rounded-xl bg-brand-600/10 border border-brand-600/30 text-xs">
+              <div
+                className="w-full mb-3 p-3 rounded text-xs"
+                style={{
+                  background: "var(--color-warning-bg)",
+                  border: "1.5px solid var(--color-warning)",
+                }}
+              >
                 <div className="flex items-start gap-2">
                   <span className="text-base flex-shrink-0 mt-0.5">🔔</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-brand-300 font-semibold mb-1">
+                    <p className="text-warning font-semibold mb-1">
                       升级完成后将自动通知，请先开启权限
                     </p>
-                    <button
-                      onClick={handleEnableNotify}
-                      className="mt-2 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold transition-colors"
-                    >
+                    <button onClick={handleEnableNotify} className="coc-btn text-xs py-1.5 px-3 mt-2">
                       开启通知权限
                     </button>
                   </div>
@@ -580,15 +616,21 @@ export default function HomePage() {
 
             {/* 不支持通知的环境 */}
             {notifyStatus.unsupportedReason && (
-              <div className="w-full mb-3 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs">
+              <div
+                className="w-full mb-3 p-3 rounded text-xs"
+                style={{
+                  background: "var(--color-danger-bg)",
+                  border: "1.5px solid var(--color-danger)",
+                }}
+              >
                 <div className="flex items-start gap-2">
                   <span className="text-base flex-shrink-0 mt-0.5">⚠️</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-red-300 font-semibold mb-1">
+                    <p className="text-danger font-semibold mb-1">
                       当前环境无法接收通知：{notifyStatus.unsupportedReason}
                     </p>
                     {notifyStatus.hint && (
-                      <p className="text-dark-400 text-[11px] leading-relaxed">{notifyStatus.hint}</p>
+                      <p className="text-sub text-[11px] leading-relaxed">{notifyStatus.hint}</p>
                     )}
                   </div>
                 </div>
@@ -681,8 +723,8 @@ export default function HomePage() {
         {/* ======== 工具栏 ======== */}
         {upgrades.length > 0 && (
           <div className="w-full flex gap-2 mb-4 animate-fade-up">
-            <button onClick={handleClearAll} className="btn-secondary text-xs py-2 flex-1 text-red-400 hover:text-red-300 border-red-500/20 hover:border-red-500/40">
-              🗑️ 清除所有数据
+            <button onClick={handleClearAll} className="coc-btn-secondary text-xs py-2 flex-1 text-danger">
+              清除所有数据
             </button>
           </div>
         )}

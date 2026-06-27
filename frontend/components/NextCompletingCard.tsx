@@ -1,5 +1,5 @@
 /**
- * 即将完成高亮卡片 — 倒计时最短的一项
+ * 即将完成高亮卡片 — 倒计时最短的一项（CoC 羊皮纸风格）
  */
 import type { UpgradeItem } from "@/types";
 import { getUpgradeDisplay } from "@/lib/coc-assets";
@@ -11,20 +11,29 @@ export function NextCompletingCard({ item }: { item: UpgradeItem }) {
   const display = getUpgradeDisplay(item.category, item.data_id ?? null, item.item_level);
 
   return (
-    <div className={`glass-card overflow-hidden p-3 border-red-500/40 bg-gradient-to-r ${done ? "from-green-500/10 to-transparent" : "from-red-500/15 to-transparent"} animate-urgent`}>
+    <div className={`coc-card p-3 ${done ? "coc-completed" : "coc-pulse"}`}>
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl bg-dark-900/60 border border-red-500/30`}>
+        <div
+          className="w-10 h-10 rounded flex items-center justify-center text-xl"
+          style={{
+            background: "var(--bg-panel-alt)",
+            border: "1.5px solid var(--border-dark)",
+          }}
+        >
           {display.icon}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-white truncate">{display.zh}</p>
-          <p className="text-xs text-dark-400">
-            {done ? "✅ 已完成!" : `剩余 ${formatCompactRemaining(remaining)}`}
+          <p className="text-sm font-bold text-main truncate">{display.zh}</p>
+          <p className="text-xs text-muted">
+            {done ? "已完成" : "即将完成"}
           </p>
         </div>
-        {!done && <div className={`text-base font-bold ${remaining <= 1800 ? "text-red-400" : "text-amber-400"}`}>
-          {formatCompactRemaining(remaining)}
-        </div>}
+        {!done && (
+          <div className="coc-countdown coc-countdown-large coc-countdown-urgent">
+            {formatCompactRemaining(remaining)}
+          </div>
+        )}
+        {done && <span className="coc-tag coc-tag-done">已完成</span>}
       </div>
     </div>
   );
