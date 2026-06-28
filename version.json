@@ -1,14 +1,22 @@
 {
   "version": "1.1.0",
-  "apkUrl": "https://github.com/xueren-ctrl/buluo/releases/latest",
+  "apkUrl": "https://github.com/xueren-ctrl/buluo/releases/tag/v1.1.0",
   "changelog": [
     {
       "version": "1.1.0",
-      "date": "2026-06-28",
+      "date": "2026-6-28",
       "notes": [
-        "monorepo 重构：抽离 shared 核心逻辑层",
-        "PWA 与 Android APP 共用同一套 parser / scheduler / analyzer",
-        "统一 version.json 作为双端更新源"
+        "monorepo 重构 + Capacitor Android + APK 签名 + 一键发版",
+        "倒计时精确到秒+夜世界名称修正+攻略优化",
+        "SW 更新完全自动化，用户无需手动刷新",
+        "自动从 JSON timestamp 字段读取导出时间，去掉手动输入",
+        "添加重算按钮，根据导出时间修正已有数据的完成时间",
+        "修正助手名字 + getItemNameById 跨类别冲突 + 升级列表分类显示",
+        "修复 PWA 缓存导致旧版本不更新 + SW 更新提示",
+        "修复导出时间为 NaN 时解析崩溃的问题",
+        "gitignore frontend/android junction (cap sync 需要)",
+        "简约化重构+删除浏览器通知UI",
+        "更新 worker 文件"
       ]
     }
   ]
