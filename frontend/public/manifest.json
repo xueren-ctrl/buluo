@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "部落冲突升级助手",
-  "short_name": "CoC 升级",
+  "name": "部落小助手",
+  "short_name": "部落助手",
   "description": "上传 CoC 游戏 JSON，自动追踪升级进度，支持离线使用、完成提醒和夜间免打扰",
   "start_url": "/",
   "scope": "/",

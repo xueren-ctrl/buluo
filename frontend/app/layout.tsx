@@ -3,9 +3,9 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "部落冲突升级规划助手",
+  title: "部落小助手",
   description: "上传 CoC JSON，智能分析升级进度，自动生成升级路线，升级完成时本地通知提醒",
-  applicationName: "CoC 升级助手",
+  applicationName: "部落小助手",
   formatDetection: {
     telephone: false,
   },
@@ -41,7 +41,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="CoC 升级" />
+        <meta name="apple-mobile-web-app-title" content="部落小助手" />
         {/* 防止主题闪烁：初始主题脚本 */}
         <script
           dangerouslySetInnerHTML={{

@@ -2,7 +2,7 @@ import { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.xueren.buluo",
-  appName: "部落冲突升级助手",
+  appName: "部落小助手",
   webDir: "out",
   android: {
     // WebView 调试模式（生产可关闭，开发期便于排查 IndexedDB/localStorage 问题）
