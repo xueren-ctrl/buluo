@@ -1,6 +1,6 @@
 {
   "name": "buluo",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "部落冲突升级助手 - monorepo (PWA + Android APK)",
   "scripts": {

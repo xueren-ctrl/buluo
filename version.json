@@ -1,7 +1,23 @@
 {
-  "version": "1.1.0",
-  "apkUrl": "https://github.com/xueren-ctrl/buluo/releases/tag/v1.1.0",
+  "version": "1.1.1",
+  "apkUrl": "https://github.com/xueren-ctrl/buluo/releases/tag/v1.1.1",
   "changelog": [
+    {
+      "version": "1.1.1",
+      "date": "2026-6-28",
+      "notes": [
+        "monorepo 重构 + Capacitor Android + APK 签名 + 一键发版",
+        "倒计时精确到秒+夜世界名称修正+攻略优化",
+        "SW 更新完全自动化，用户无需手动刷新",
+        "自动从 JSON timestamp 字段读取导出时间，去掉手动输入",
+        "APK 改名部落小助手 + 修复粘贴/解析按钮",
+        "修正助手名字 + getItemNameById 跨类别冲突 + 升级列表分类显示",
+        "修复 PWA 缓存导致旧版本不更新 + SW 更新提示",
+        "gitignore frontend/android junction (cap sync 需要)",
+        "简约化重构+删除浏览器通知UI",
+        "更新 worker 文件"
+      ]
+    },
     {
       "version": "1.1.0",
       "date": "2026-6-28",
