@@ -24,6 +24,11 @@
  *   8. 创建 GitHub Release 并上传 APK（gh CLI 优先，回退 REST API）
  *   9. 更新 version.json（version / apkUrl / changelog / publish time）
  *  10. git commit + push
+ *
+ * [v1.2.0 修复] 编码问题：Windows 中文系统下 UTF-8 文本被当作 GBK 读取导致乱码
+ *   - runQuiet/run: 强制子进程使用 UTF-8 环境
+ *   - generateChangelog: git log 添加 -c i18n.logOutputEncoding=utf-8
+ *   - createGitHubRelease: gh CLI 路径强制 UTF-8 环境；REST API 添加 charset=utf-8
  */
 
 const fs = require("fs");
@@ -41,6 +46,15 @@ const VERSION_JSON = path.join(ROOT, "version.json");
 const BUILD_GRADLE = path.join(ANDROID, "app", "build.gradle");
 
 const GITHUB_REPO_FALLBACK = "xueren-ctrl/buluo";
+
+// ── UTF-8 环境变量（防止 Windows 中文系统下子进程输出被当作 GBK）────
+const UTF8_ENV = {
+  ...process.env,
+  LANG: "en_US.UTF-8",
+  LC_ALL: "en_US.UTF-8",
+  // Windows: 强制控制台使用 UTF-8 代码页
+  PYTHONIOENCODING: "utf-8",
+};
 
 // ── 日志 ────────────────────────────────
 const C = {
@@ -66,14 +80,24 @@ function run(label, cmd, opts = {}) {
   const { cwd = ROOT, shell = true, env } = opts;
   console.log(`${C.cyan}[BUILD]${C.reset} ${label}`);
   console.log(`${C.dim}  $ ${cmd}${C.reset}`);
-  const r = spawnSync(cmd, { cwd, shell, stdio: "inherit", windowsHide: true, env: env ? { ...process.env, ...env } : process.env });
+  // 合并 UTF-8 环境变量，防止子进程输出编码错误
+  const childEnv = env ? { ...UTF8_ENV, ...env } : UTF8_ENV;
+  const r = spawnSync(cmd, { cwd, shell, stdio: "inherit", windowsHide: true, env: childEnv });
   if (r.status !== 0) fail(`${label} 失败 (exit ${r.status})`);
   ok(`${label} 完成`);
 }
 
+// [修复] 强制使用 UTF-8 环境，防止 Windows 中文系统下 git 输出被当作 GBK
 function runQuiet(cmd, opts = {}) {
-  try { return execSync(cmd, { cwd: ROOT, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], ...opts }).trim(); }
-  catch { return ""; }
+  try {
+    return execSync(cmd, {
+      cwd: ROOT,
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+      env: UTF8_ENV,  // [修复] 强制 UTF-8 环境
+      ...opts,
+    }).trim();
+  } catch { return ""; }
 }
 
 // ── 版本号读取 ──────────────────────────
@@ -254,7 +278,9 @@ function todayCN() {
 function generateChangelog(newVersion, prevTag) {
   step("7/10", "生成 Release Note");
   const range = prevTag ? `${prevTag}..HEAD` : "-20";
-  const log = runQuiet(`git log ${range} --pretty=format:"%s" --no-merges`) || "";
+  // [修复] 添加 -c i18n.logOutputEncoding=utf-8，强制 git log 输出 UTF-8
+  // 防止 Windows 中文系统下 git 输出被当作 GBK
+  const log = runQuiet(`git -c i18n.logOutputEncoding=utf-8 log ${range} --pretty=format:"%s" --no-merges`) || "";
   const lines = log.split("\n").map((l) => l.trim()).filter(Boolean);
 
   const added = [], fixed = [], improved = [], others = [];
@@ -299,13 +325,25 @@ function createGitHubRelease(tagName, apkPath, note, isDryRun) {
 
   if (isDryRun) { warn("--dry-run: 跳过实际创建 Release"); return `https://github.com/${repo}/releases/tag/${tagName}`; }
 
+  // [修复] 优先使用 REST API（JSON.stringify + fetch 对 UTF-8 更可靠）
+  // gh CLI 在 Windows 中文系统下可能将 UTF-8 文件当作 GBK 读取导致乱码
+  const token = process.env.GITHUB_TOKEN;
+  if (token) {
+    const [owner, name] = repo.split("/");
+    return createGitHubReleaseAsync(token, owner, name, repo, tagName, apkPath, note);
+  }
+
+  // 回退：gh CLI（需要 UTF-8 环境保障）
   if (hasGhCli()) {
     const noteFile = path.join(os.tmpdir(), `buluo-release-note-${Date.now()}.md`);
-    fs.writeFileSync(noteFile, note, "utf8");
+    // [修复] 写入 UTF-8 BOM，帮助 gh CLI 正确识别文件编码
+    const BOM = "\uFEFF";
+    fs.writeFileSync(noteFile, BOM + note, "utf8");
     try {
       execSync(
         `gh release create "${tagName}" "${apkPath}" --repo "${repo}" --title "${tagName}" --notes-file "${noteFile}"`,
-        { cwd: ROOT, stdio: "inherit", windowsHide: true }
+        // [修复] 强制 UTF-8 环境
+        { cwd: ROOT, stdio: "inherit", windowsHide: true, env: UTF8_ENV }
       );
       ok(`GitHub Release 已创建（gh CLI）`);
       return `https://github.com/${repo}/releases/tag/${tagName}`;
@@ -316,8 +354,6 @@ function createGitHubRelease(tagName, apkPath, note, isDryRun) {
     }
   }
 
-  // 回退：REST API + GITHUB_TOKEN
-  const token = process.env.GITHUB_TOKEN;
   if (!token) fail("未找到 GITHUB_TOKEN 环境变量，且 gh CLI 不可用/未登录。请设置 GITHUB_TOKEN 或登录 gh。");
   const [owner, name] = repo.split("/");
   return createGitHubReleaseAsync(token, owner, name, repo, tagName, apkPath, note);
@@ -332,7 +368,8 @@ async function createGitHubReleaseAsync(token, owner, name, repo, tagName, apkPa
       Accept: "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
       "User-Agent": "buluo-release-script",
-      "Content-Type": "application/json",
+      // [修复] 明确指定 charset=utf-8
+      "Content-Type": "application/json; charset=utf-8",
     },
     body: JSON.stringify({ tag_name: tagName, name: tagName, body: note, draft: false, prerelease: false }),
   });
@@ -342,6 +379,30 @@ async function createGitHubReleaseAsync(token, owner, name, repo, tagName, apkPa
   }
   const release = await createRes.json();
   ok(`Release 已创建 (id=${release.id})`);
+
+  // [修复] 验证 release body 是否包含正确的中文（非乱码）
+  if (release.body) {
+    const hasGarbled = /[\u6DC7\u6D93\u95FF\u7718\u7490]/.test(release.body);
+    if (hasGarbled) {
+      warn("检测到 Release body 可能存在乱码！将尝试通过 API 更新 body...");
+      const updateRes = await fetch(`https://api.github.com/repos/${owner}/${name}/releases/${release.id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+          "User-Agent": "buluo-release-script",
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({ body: note }),
+      });
+      if (updateRes.ok) {
+        ok("Release body 已通过 API 更新为正确的 UTF-8 文本");
+      } else {
+        warn("Release body 更新失败，请手动编辑 Release 修正乱码");
+      }
+    }
+  }
 
   // 上传 APK asset
   const uploadBase = release.upload_url.replace(/\{[^}]*\}$/, "");
