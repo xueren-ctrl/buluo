@@ -1,5 +1,6 @@
 package com.xueren.buluo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Build;
 import android.view.View;
@@ -12,8 +13,30 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // 注册原生插件：系统设置页跳转（电池优化/自启动/通知设置等）
+        registerPlugin(SettingsOpenerPlugin.class);
         super.onCreate(savedInstanceState);
         hideSystemBars();
+        startBackgroundService();
+    }
+
+    /**
+     * 启动后台监督服务（Foreground Service）
+     * - 在通知中心常驻一条 ongoing 通知："部落小助手正在监督您的升级项目"
+     * - 用户授权 POST_NOTIFICATIONS 后通知才显示（Android 13+）
+     * - START_STICKY：被系统杀死后会自动重启
+     */
+    private void startBackgroundService() {
+        try {
+            Intent serviceIntent = new Intent(this, BackgroundService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
+        } catch (Exception e) {
+            // 兜底：某些国产 ROM 可能限制后台启动 Service，忽略错误
+        }
     }
 
     @Override

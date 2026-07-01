@@ -95,12 +95,14 @@ const SPELL_MAP: AssetMap = {
 };
 
 // 英雄 heroes (28000xxx)
+// ID 顺序按英雄发布顺序：国王(TH7) → 女皇(TH9) → 大守护者(TH11) → 战斗机器(夜世界) →
+// 飞盾战神(TH13) → 战斗直升机(夜世界) → 亡灵王子(TH17, 2024-11)
 const HERO_MAP: AssetMap = {
   28000000: { zh: "野蛮人之王", en: "Barbarian King", type: "heroes", color: "yellow", icon: "👑" },
   28000001: { zh: "弓箭女皇", en: "Archer Queen", type: "heroes", color: "yellow", icon: "👸" },
-  28000002: { zh: "亡灵王子", en: "Minion Prince", type: "heroes", color: "yellow", icon: "🦇" },
+  28000002: { zh: "大守护者", en: "Grand Warden", type: "heroes", color: "yellow", icon: "�" },
   28000004: { zh: "飞盾战神", en: "Royal Champion", type: "heroes", color: "yellow", icon: "🛡️" },
-  28000006: { zh: "大守护者", en: "Grand Warden", type: "heroes", color: "yellow", icon: "🧙" },
+  28000006: { zh: "亡灵王子", en: "Minion Prince", type: "heroes", color: "yellow", icon: "�" },
 };
 
 // 宠物 pets (73000xxx)
@@ -176,7 +178,7 @@ const UNIT_MAP: AssetMap = {
   4000009: { zh: "炸弹人", en: "Wall Breaker", type: "units", color: "cyan", icon: "💣" },
   4000010: { zh: "飞龙宝宝", en: "Baby Dragon", type: "units", color: "cyan", icon: "🐲" },
   4000011: { zh: "矿工", en: "Miner", type: "units", color: "cyan", icon: "⛏️" },
-  4000012: { zh: "电龙", en: "Electro Dragon", type: "units", color: "cyan", icon: "⚡" },
+  4000012: { zh: "超级法师", en: "Super Wizard", type: "units", color: "cyan", icon: "🔮" },
   4000013: { zh: "米尼奥", en: "Minion", type: "units", color: "cyan", icon: "🦇" },
   4000015: { zh: "瓦基丽", en: "Valkyrie", type: "units", color: "cyan", icon: "🪓" },
   4000017: { zh: "投球手", en: "Bowler", type: "units", color: "cyan", icon: "🎳" },
@@ -185,7 +187,7 @@ const UNIT_MAP: AssetMap = {
   4000024: { zh: "守护者学徒", en: "Apprentice Warden", type: "units", color: "cyan", icon: "🧙" },
   4000053: { zh: "雪怪", en: "Yeti", type: "units", color: "cyan", icon: "🐻‍❄️" },
   4000058: { zh: "飞龙骑士", en: "Dragon Rider", type: "units", color: "cyan", icon: "🐉" },
-  4000059: { zh: "超级法师", en: "Super Wizard", type: "units", color: "cyan", icon: "🔮" },
+  4000059: { zh: "雷电飞龙", en: "Electro Dragon", type: "units", color: "cyan", icon: "⚡" },
   4000065: { zh: "电泰坦", en: "Electro Titan", type: "units", color: "cyan", icon: "👩" },
   4000082: { zh: "根须骑士", en: "Root Rider", type: "units", color: "cyan", icon: "🌿" },
   4000097: { zh: "投掷者", en: "Thrower", type: "units", color: "cyan", icon: "🤾" },

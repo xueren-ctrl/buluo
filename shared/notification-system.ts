@@ -258,6 +258,56 @@ export async function scheduleLocalNotification(
   }
 }
 
+// ── 测试通知（让用户验证后台通知是否真能弹）──
+// delaySec 秒后弹一条测试通知，期间用户可退出 APP 验证 AlarmManager 是否生效
+export async function scheduleTestNotification(delaySec: number = 30): Promise<{
+  ok: boolean;
+  message: string;
+  fireAt: Date;
+}> {
+  try {
+    await createNotificationChannels();
+    const fireAt = new Date(Date.now() + delaySec * 1000);
+    const testId = 999999; // 固定 ID，便于重复测试时取消旧的
+    try {
+      await LocalNotifications.cancel({ notifications: [{ id: testId }] });
+    } catch {
+      /* ignore */
+    }
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: testId,
+          title: "✅ 测试通知",
+          body: `这是 ${delaySec} 秒前调度的测试通知。看到此消息说明 APP 退出后通知功能正常工作。`,
+          channelId: CHANNELS.UPGRADE_COMPLETE,
+          sound: "default",
+          smallIcon: "ic_stat_icon",
+          largeIcon: "ic_launcher",
+          schedule: {
+            at: fireAt,
+            allowWhileIdle: true,
+          },
+          extra: { test: true, scheduledAt: Date.now() },
+        },
+      ],
+    });
+    log(`测试通知已调度，${delaySec} 秒后触发:`, fireAt.toISOString());
+    return {
+      ok: true,
+      message: `测试通知已调度，${delaySec} 秒后（${fireAt.toLocaleTimeString()}）弹出。请立即退出 APP 等待。`,
+      fireAt,
+    };
+  } catch (e) {
+    error("调度测试通知失败:", e);
+    return {
+      ok: false,
+      message: `调度失败: ${e instanceof Error ? e.message : String(e)}`,
+      fireAt: new Date(),
+    };
+  }
+}
+
 // ── 批量调度未来通知 ──────────────────────
 export async function scheduleLocalNotifications(
   list: ScheduleInput[]

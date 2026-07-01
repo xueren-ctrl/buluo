@@ -52,7 +52,8 @@ import {
   loadAllAccounts,
   type SchedulerSettings,
 } from "@/lib/indexeddb";
-import { requestNotificationPermission, detectNotifyStatusAsync, type NotifyStatus } from "@/lib/notification-system";
+import { Capacitor } from "@capacitor/core";
+import { requestNotificationPermission, detectNotifyStatusAsync, scheduleTestNotification, type NotifyStatus } from "@/lib/notification-system";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -71,6 +72,7 @@ export default function SettingsPage() {
   // 通知设置
   const [settings, setSettings] = useState<SchedulerSettings | null>(null);
   const [notifyStatus, setNotifyStatus] = useState<NotifyStatus | null>(null);
+  const [testingNotif, setTestingNotif] = useState(false);
 
   // 更新管理
   const [updateResult, setUpdateResult] = useState<UpdateCheckResult | null>(null);
@@ -138,6 +140,31 @@ export default function SettingsPage() {
       console.error(e);
     }
   }, []);
+
+  // ── 测试后台通知：30 秒后弹一条通知，期间用户可退出 APP 验证 AlarmManager 是否生效 ──
+  const handleTestNotification = useCallback(async () => {
+    if (testingNotif) return;
+    if (!notifyStatus?.browserNotifGranted) {
+      toast.error("请先开启通知权限", { className: "toast-error" });
+      return;
+    }
+    setTestingNotif(true);
+    try {
+      const r = await scheduleTestNotification(30);
+      if (r.ok) {
+        toast.success(
+          `测试通知已调度，30 秒后弹出。请立即退出 APP（按 Home 键）等待。`,
+          { className: "toast-success", duration: 6000 }
+        );
+      } else {
+        toast.error(r.message, { className: "toast-error", duration: 6000 });
+      }
+    } catch (e) {
+      toast.error(`测试失败: ${e instanceof Error ? e.message : String(e)}`, { className: "toast-error" });
+    } finally {
+      setTimeout(() => setTestingNotif(false), 2000);
+    }
+  }, [testingNotif, notifyStatus]);
 
   const handleClearNotifyState = useCallback(async () => {
     if (!confirm("确定要重置通知去重状态吗？所有已发送的通知标记将被清除，可能导致通知重复发送。")) return;
@@ -320,66 +347,209 @@ export default function SettingsPage() {
 
         {/* ======== 3. 通知设置 ======== */}
         <Section title="通知设置" emoji="🔔">
-          {/* 权限状态 */}
-          <div className="space-y-1 mb-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-sub">
-                本地通知权限
-                {notifyStatus?.browserNotifGranted ? (
-                  <span className="text-success ml-1">✓ 已开启</span>
-                ) : (
-                  <span className="text-warning ml-1">未授权</span>
-                )}
-              </span>
+          {/* 通知健康状态总览 */}
+          <div
+            className="rounded-xl p-3 mb-3 space-y-2"
+            style={{
+              background: "var(--bg-elevated, rgba(255,255,255,0.04))",
+              border: "1px solid var(--divider)",
+            }}
+          >
+            <p className="text-[10px] text-muted font-semibold uppercase tracking-wide">通知健康状态</p>
+
+            {/* 通知权限 */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">
+                  {notifyStatus?.browserNotifGranted ? "✅" : "❌"}
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-xs text-sub font-medium">通知权限</span>
+                  <span className="text-[10px] text-muted">
+                    {notifyStatus?.browserNotifGranted ? "已授权" : "未授权"}
+                  </span>
+                </div>
+              </div>
               <button
                 onClick={handleEnableNotify}
-                className={
+                disabled={!notifyStatus?.browserNotifAvailable}
+                className={`text-xs font-medium rounded-lg px-3 py-1.5 transition-all duration-200 active:scale-95 ${
                   notifyStatus?.browserNotifGranted
-                    ? "coc-btn-secondary text-xs !py-1 !px-3 text-success"
-                    : "coc-btn text-xs !py-1 !px-3"
-                }
+                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                    : notifyStatus?.browserNotifAvailable
+                      ? "bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 hover:-translate-y-0.5"
+                      : "bg-gray-500/10 text-gray-500 border border-gray-500/20 cursor-not-allowed"
+                }`}
               >
-                {notifyStatus?.browserNotifGranted ? "已开启" : "申请权限"}
+                {notifyStatus?.browserNotifGranted ? "✓ 已开启" : "申请权限"}
               </button>
             </div>
+
+            {/* 后台服务状态（仅原生平台显示） */}
+            {Capacitor.isNativePlatform() && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">
+                    {notifyStatus?.browserNotifGranted ? "✅" : "⚪"}
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-sub font-medium">后台监督服务</span>
+                    <span className="text-[10px] text-muted">
+                      {notifyStatus?.browserNotifGranted
+                        ? "运行中 · 通知中心常驻"
+                        : "需先开启通知权限"}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] text-muted">自动启动</span>
+              </div>
+            )}
+
+            {/* 电池优化状态 */}
+            {batteryStatus && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">
+                    {batteryStatus.isOptimized ? "⚠️" : "✅"}
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-sub font-medium">电池优化</span>
+                    <span className="text-[10px] text-muted">
+                      {batteryStatus.isOptimized
+                        ? `${batteryStatus.manufacturer.toUpperCase()} 可能杀后台`
+                        : "未受限"}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] text-muted">
+                  {batteryStatus.needsAutostart ? "需加白名单" : "正常"}
+                </span>
+              </div>
+            )}
+
+            {/* 综合诊断提示 */}
+            {notifyStatus?.browserNotifGranted && batteryStatus?.isOptimized && (
+              <div
+                className="mt-1 p-2 rounded-lg text-[10px] leading-relaxed"
+                style={{
+                  background: "rgba(251, 191, 36, 0.08)",
+                  border: "1px solid rgba(251, 191, 36, 0.2)",
+                }}
+              >
+                <p className="text-amber-500 font-semibold">⚠️ 通知可能失效</p>
+                <p className="text-muted mt-0.5">
+                  您的设备（{batteryStatus.manufacturer.toUpperCase()}）可能杀后台进程。
+                  请点击下方「关闭电池优化」和「允许自启动」，然后点「测试通知」验证。
+                </p>
+              </div>
+            )}
+            {notifyStatus?.browserNotifGranted && !batteryStatus?.isOptimized && (
+              <div
+                className="mt-1 p-2 rounded-lg text-[10px] leading-relaxed"
+                style={{
+                  background: "rgba(52, 211, 153, 0.08)",
+                  border: "1px solid rgba(52, 211, 153, 0.2)",
+                }}
+              >
+                <p className="text-emerald-400 font-semibold">✓ 通知环境正常</p>
+                <p className="text-muted mt-0.5">
+                  权限已开启，电池优化未受限。如通知仍不弹出，请点「测试通知」验证。
+                </p>
+              </div>
+            )}
           </div>
 
-          <div className="text-[11px] text-muted mb-2">
-            ✓ 三个通道：升级完成 / 工人空闲 / 实验室完成
+          {/* 提醒时机开关 */}
+          <div className="space-y-1">
+            <ToggleRow
+              label="升级完成"
+              checked={!!settings?.enableComplete}
+              onChange={(v) => handleSettingChange({ enableComplete: v })}
+            />
+            <ToggleRow
+              label="提前 30 分钟"
+              checked={!!settings?.enablePre30m}
+              onChange={(v) => handleSettingChange({ enablePre30m: v })}
+            />
+            <ToggleRow
+              label="提前 10 分钟"
+              checked={!!settings?.enablePre10m}
+              onChange={(v) => handleSettingChange({ enablePre10m: v })}
+            />
+            <ToggleRow
+              label="完成后 10 分钟（再次提醒）"
+              checked={!!settings?.enablePostComplete}
+              onChange={(v) => handleSettingChange({ enablePostComplete: v })}
+            />
           </div>
 
-          <ToggleRow
-            label="升级完成"
-            checked={!!settings?.enableComplete}
-            onChange={(v) => handleSettingChange({ enableComplete: v })}
-          />
-          <ToggleRow
-            label="提前 30 分钟"
-            checked={!!settings?.enablePre30m}
-            onChange={(v) => handleSettingChange({ enablePre30m: v })}
-          />
-          <ToggleRow
-            label="提前 10 分钟"
-            checked={!!settings?.enablePre10m}
-            onChange={(v) => handleSettingChange({ enablePre10m: v })}
-          />
-          <ToggleRow
-            label="完成后 10 分钟（再次提醒）"
-            checked={!!settings?.enablePostComplete}
-            onChange={(v) => handleSettingChange({ enablePostComplete: v })}
-          />
+          {/* 后台提醒 + 测试按钮 */}
+          <div
+            className="mt-3 pt-3 rounded-xl"
+            style={{ borderTop: "1px solid var(--divider)" }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex flex-col">
+                <span className="text-xs text-sub font-medium">后台提醒测试</span>
+                <span className="text-[10px] text-muted mt-0.5">
+                  30 秒后弹通知 · 验证 APP 退出后能否触发
+                </span>
+              </div>
+              <button
+                onClick={handleTestNotification}
+                disabled={testingNotif || !notifyStatus?.browserNotifGranted}
+                className={`text-xs font-medium rounded-lg px-3 py-1.5 transition-all duration-200 active:scale-95 ${
+                  testingNotif
+                    ? "bg-gray-500/15 text-gray-400 cursor-wait"
+                    : notifyStatus?.browserNotifGranted
+                      ? "bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/20 hover:shadow-lg hover:shadow-sky-500/30 hover:-translate-y-0.5"
+                      : "bg-gray-500/10 text-gray-500 border border-gray-500/20 cursor-not-allowed"
+                }`}
+              >
+                {testingNotif ? "调度中…" : "🔔 测试通知"}
+              </button>
+            </div>
 
-          <div className="mt-3 pt-2" style={{ borderTop: "1px solid var(--divider)" }}>
-            <p className="text-xs text-muted mb-2">工人空闲 / 实验室完成通知</p>
+            {/* 国产 ROM 引导（仅 APK 显示）*/}
+            {Capacitor.isNativePlatform() && (
+              <div
+                className="mt-2 p-2.5 rounded-lg text-[11px] leading-relaxed"
+                style={{
+                  background: "rgba(251, 191, 36, 0.08)",
+                  border: "1px solid rgba(251, 191, 36, 0.2)",
+                }}
+              >
+                <p className="font-semibold text-amber-500 mb-1">⚠️ 国产手机需加白名单</p>
+                <p className="text-muted">
+                  小米/华为/OPPO/vivo 会杀后台进程导致通知失效。请前往系统设置：
+                </p>
+                <ol className="text-muted mt-1 pl-4 list-decimal space-y-0.5">
+                  <li>应用管理 → 部落小助手 → 自启动 → 开启</li>
+                  <li>电池优化 / 省电策略 → 设为「无限制」</li>
+                  <li>后台弹出界面 / 锁屏显示 → 允许</li>
+                </ol>
+                <p className="text-muted mt-1.5">
+                  设置后点「测试通知」，立即退出 APP 等 30 秒验证。
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* 工人/实验室说明 */}
+          <div
+            className="mt-3 pt-2"
+            style={{ borderTop: "1px solid var(--divider)" }}
+          >
+            <p className="text-xs text-muted mb-1">工人空闲 / 实验室完成</p>
             <p className="text-[11px] text-muted leading-relaxed">
-              工人空闲和实验室完成通知会通过同一套调度系统自动触发，
-              无需单独开关 — 只要"升级完成"开启，相关通知会自动弹出。
+              通过同一套调度系统自动触发，无需单独开关。
             </p>
           </div>
 
+          {/* 重置去重按钮 */}
           <button
             onClick={handleClearNotifyState}
-            className="coc-btn-secondary text-xs !py-1.5 !px-3 mt-3 w-full"
+            className="mt-3 w-full text-xs font-medium rounded-lg px-3 py-2 transition-all duration-200 active:scale-95 bg-transparent border border-current text-muted hover:text-danger hover:border-danger/40 hover:bg-red-500/5"
           >
             重置通知去重
           </button>

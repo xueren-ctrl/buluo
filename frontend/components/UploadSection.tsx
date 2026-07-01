@@ -3,6 +3,8 @@
  */
 import { useState, useRef } from "react";
 import toast from "react-hot-toast";
+import { Capacitor } from "@capacitor/core";
+import { Clipboard } from "@capacitor/clipboard";
 
 export function UploadSection({
   jsonInput,
@@ -21,10 +23,30 @@ export function UploadSection({
   const jsonRef = useRef<HTMLTextAreaElement>(null);
 
   // 从剪贴板快速导入
-  // navigator.clipboard 在 Capacitor WebView (https scheme) 或浏览器 https 下可用
-  // HTTP 或权限被拒时回退到展开 textarea 让用户手动 Ctrl+V
+  // 原生 APK：使用 @capacitor/clipboard（无需 HTTPS/权限弹窗）
+  // Web/PWA：使用 navigator.clipboard API（需 HTTPS + 权限）
+  // 兜底：展开 textarea 让用户手动 Ctrl+V
   const handlePasteFromClipboard = async () => {
-    // 1. 优先尝试现代 Clipboard API
+    // 1. 原生 APK：Capacitor Clipboard 插件
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const result = await Clipboard.read();
+        const text = result.value || "";
+        if (text.trim()) {
+          onJsonChange(text);
+          setExpanded(true);
+          toast.success("已从剪贴板粘贴", { duration: 1500 });
+          return;
+        }
+        setExpanded(true);
+        toast("剪贴板为空，请手动粘贴", { icon: "ℹ️" });
+        return;
+      } catch (e) {
+        console.warn("Capacitor Clipboard.read 失败，回退到 Web API", e);
+      }
+    }
+
+    // 2. Web/PWA：navigator.clipboard API
     if (navigator.clipboard && typeof navigator.clipboard.readText === "function") {
       try {
         const text = await navigator.clipboard.readText();
@@ -34,23 +56,20 @@ export function UploadSection({
           toast.success("已从剪贴板粘贴", { duration: 1500 });
           return;
         }
-        // 剪贴板为空 — 展开让用户手动输入
         setExpanded(true);
         toast("剪贴板为空，请手动粘贴", { icon: "ℹ️" });
         return;
       } catch (e) {
-        // 权限被拒 / 非 secure context — 继续走 fallback
-        console.warn("clipboard.readText 失败，回退到 execCommand", e);
+        console.warn("clipboard.readText 失败，回退到手动输入", e);
       }
     }
-    // 2. 回退：document.execCommand("paste") 在大多数现代浏览器已被禁用，
-    //    因此不再尝试自动粘贴，直接展开 textarea 让用户手动 Ctrl+V
+
+    // 3. 兜底：展开 textarea 让用户手动 Ctrl+V
     setExpanded(true);
     toast(
-      "自动读取剪贴板被浏览器拒绝，请手动 Ctrl+V 粘贴到下方文本框",
+      "请手动 Ctrl+V 粘贴到下方文本框",
       { icon: "ℹ️", duration: 4000 }
     );
-    // 聚焦 textarea，方便用户立即 Ctrl+V
     setTimeout(() => jsonRef.current?.focus(), 50);
   };
 

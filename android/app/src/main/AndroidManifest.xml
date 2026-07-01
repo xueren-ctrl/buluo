@@ -33,6 +33,17 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!-- 后台监督服务：显示常驻通知，让用户知道 APP 在后台运行 -->
+        <service
+            android:name=".BackgroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_FOREGROUND_SERVICE_TYPE"
+                android:value="specialUse" />
+        </service>
     </application>
 
     <!-- Permissions -->
@@ -42,6 +53,10 @@
 
     <!-- 本地通知（Android 13+ POST_NOTIFICATIONS 必需）-->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- 前台服务（显示常驻后台监督通知）-->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <!-- 精确告警（确保升级完成时通知准时触发，APP 关闭时也能弹）-->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />

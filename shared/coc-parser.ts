@@ -22,6 +22,49 @@ const TIMER_CATEGORIES = [
 
 type RawItem = Record<string, unknown>;
 
+/**
+ * 从 JSON 中提取玩家名字
+ * 支持多种字段路径，兼容不同导出工具：
+ *  1. data.playerName（标准 CoC 导出）
+ *  2. data.name
+ *  3. data.player.name
+ *  4. data.user.name
+ *  5. data.profile.name
+ *  6. data.info.playerName
+ */
+function extractPlayerNameFromJson(data: Record<string, unknown>): string {
+  // 1. 顶层 playerName
+  if (typeof data.playerName === "string" && data.playerName.trim()) {
+    return data.playerName.trim();
+  }
+  // 2. 顶层 name
+  if (typeof data.name === "string" && data.name.trim()) {
+    return data.name.trim();
+  }
+  // 3-6. 嵌套路径
+  const nestedPaths: string[][] = [
+    ["player", "name"],
+    ["user", "name"],
+    ["profile", "name"],
+    ["info", "playerName"],
+    ["info", "name"],
+  ];
+  for (const path of nestedPaths) {
+    let val: unknown = data;
+    for (const key of path) {
+      if (val == null || typeof val !== "object") {
+        val = null;
+        break;
+      }
+      val = (val as Record<string, unknown>)[key];
+    }
+    if (typeof val === "string" && val.trim()) {
+      return val.trim();
+    }
+  }
+  return "";
+}
+
 function getTimer(item: RawItem): number | null {
   const timer = item.timer;
   if (typeof timer === "number" && timer > 0) return Math.floor(timer);
@@ -164,7 +207,7 @@ export function extractPlayerInfo(raw: string | object): PlayerInfo {
   }
 
   const playerTag = (data.playerTag as string) || (data.tag as string) || "";
-  const playerName = (data.playerName as string) || (data.name as string) || "";
+  const playerName = extractPlayerNameFromJson(data);
 
   let townHallLevel = 0;
   let builderCount = 0;
@@ -297,7 +340,7 @@ export function parseVillage(raw: string | object, exportTime?: number): Village
   let townHallLevel = 0;
   let builderCount = 0;
   const playerTag = (data.playerTag as string) || (data.tag as string) || "";
-  const playerName = (data.playerName as string) || (data.name as string) || "";
+  const playerName = extractPlayerNameFromJson(data);
   let unknownIdCount = 0;
 
   for (const cat of TIMER_CATEGORIES) {

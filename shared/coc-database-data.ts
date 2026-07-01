@@ -102,11 +102,12 @@ const RAW_DATA: CocItemDef[] = [
   { scId: 26000070, category: "spells", zh: "蔓生法术", en: "Overgrowth Spell", buildCategory: "offense", maxLevel: 4, upgradeTimeSec: [0,864000,1036800,1296000], thRequired: genTH(4,12,1), priority: 5, usesBuilder: false },
 
   // ============ 英雄 heroes ============
+  // ID 顺序按英雄发布顺序：国王(TH7) → 女皇(TH9) → 大守护者(TH11) → 飞盾战神(TH13) → 亡灵王子(TH17, 2024-11)
   { scId: 28000000, category: "heroes", zh: "野蛮人之王", en: "Barbarian King", buildCategory: "offense", maxLevel: 105, upgradeTimeSec: estTime(105, 3600, 7*DAY), thRequired: genTH(105,7,1), priority: 8, usesBuilder: false },
   { scId: 28000001, category: "heroes", zh: "弓箭女皇", en: "Archer Queen", buildCategory: "offense", maxLevel: 105, upgradeTimeSec: estTime(105, 3600, 7*DAY), thRequired: genTH(105,9,1), priority: 9, usesBuilder: false },
-  { scId: 28000002, category: "heroes", zh: "亡灵王子", en: "Minion Prince", buildCategory: "offense", maxLevel: 95, upgradeTimeSec: estTime(95, 3600, 7*DAY), thRequired: genTH(95,12,1), priority: 8, usesBuilder: false },
+  { scId: 28000002, category: "heroes", zh: "大守护者", en: "Grand Warden", buildCategory: "offense", maxLevel: 80, upgradeTimeSec: estTime(80, 3600, 7*DAY), thRequired: genTH(80,11,1), priority: 8, usesBuilder: false },
   { scId: 28000004, category: "heroes", zh: "飞盾战神", en: "Royal Champion", buildCategory: "offense", maxLevel: 55, upgradeTimeSec: estTime(55, 3600, 7*DAY), thRequired: genTH(55,13,1), priority: 8, usesBuilder: false },
-  { scId: 28000006, category: "heroes", zh: "大守护者", en: "Grand Warden", buildCategory: "offense", maxLevel: 80, upgradeTimeSec: estTime(80, 3600, 7*DAY), thRequired: genTH(80,11,1), priority: 8, usesBuilder: false },
+  { scId: 28000006, category: "heroes", zh: "亡灵王子", en: "Minion Prince", buildCategory: "offense", maxLevel: 95, upgradeTimeSec: estTime(95, 3600, 7*DAY), thRequired: genTH(95,17,1), priority: 8, usesBuilder: false },
 
   // ============ 宠物 pets ============
   ...[73000000,73000001,73000002,73000003,73000004,73000005,73000006,73000007,73000008,73000009,73000010].map((id, i) => {
@@ -158,15 +159,15 @@ const RAW_DATA: CocItemDef[] = [
     [4000003,"巨人","Giant"],[4000004,"法师","Wizard"],[4000005,"天使","Healer"],
     [4000006,"飞龙","Dragon"],[4000007,"皮卡超人","P.E.K.K.A"],[4000008,"气球兵","Balloon"],
     [4000009,"炸弹人","Wall Breaker"],[4000010,"飞龙宝宝","Baby Dragon"],[4000011,"矿工","Miner"],
-    [4000012,"电龙","Electro Dragon"],[4000013,"米尼奥","Minion"],[4000015,"瓦基丽","Valkyrie"],
+    [4000012,"超级法师","Super Wizard"],[4000013,"米尼奥","Minion"],[4000015,"瓦基丽","Valkyrie"],
     [4000017,"投球手","Bowler"],[4000022,"冰石巨人","Ice Golem"],[4000023,"猎头者","Headhunter"],
     [4000024,"守护者学徒","Apprentice Warden"],[4000053,"雪怪","Yeti"],
-    [4000058,"飞龙骑士","Dragon Rider"],[4000059,"超级法师","Super Wizard"],
+    [4000058,"飞龙骑士","Dragon Rider"],[4000059,"雷电飞龙","Electro Dragon"],
     [4000065,"电泰坦","Electro Titan"],[4000082,"根须骑士","Root Rider"],[4000097,"投掷者","Thrower"]
   ].map(([id,zh,en], i) => ({
     scId: id as number, category: "units", zh: zh as string, en: en as string,
     buildCategory: "offense" as BuildCategory,
-    maxLevel: [14,14,14,14,14,11,14,13,14,14,10,12,9,14,12,10,8,12,6,10,6,6,6,6,4][i] || 10,
+    maxLevel: [14,14,14,14,14,11,14,13,14,14,10,12,6,14,12,10,8,12,6,10,6,9,6,6,4][i] || 10,
     upgradeTimeSec: estTime(14, 3600, 15*DAY),
     thRequired: genTH(14, 1, 1), priority: 5, usesBuilder: false
   })),

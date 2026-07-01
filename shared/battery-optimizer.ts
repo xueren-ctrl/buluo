@@ -15,7 +15,21 @@
  * 让 Android WebView 启动系统 Intent。
  */
 
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, registerPlugin } from "@capacitor/core";
+
+// ── 原生插件接口（SettingsOpenerPlugin.java） ──
+// 解决 Capacitor WebView 中 <a href="intent://..."> 点击无反应的问题
+interface SettingsOpenerPlugin {
+  openBatteryOptimization(): Promise<{ ok: boolean; fallback?: boolean }>;
+  requestIgnoreBatteryOptimizations(): Promise<{ ok: boolean }>;
+  openAutostart(options: { manufacturer: string }): Promise<{ ok: boolean }>;
+  openPowerSaveWhitelist(options: { manufacturer: string }): Promise<{ ok: boolean }>;
+  openAppNotificationSettings(): Promise<{ ok: boolean; fallback?: boolean }>;
+  openAppDetailsSettings(): Promise<{ ok: boolean }>;
+}
+
+// 注册插件（原生平台可用，Web 平台调用会抛异常）
+const SettingsOpener = registerPlugin<SettingsOpenerPlugin>("SettingsOpener");
 
 // ── 厂商识别 ──────────────────────────────
 export type Manufacturer =
@@ -100,8 +114,8 @@ export async function detectBatteryOptimization(): Promise<BatteryOptimizationSt
 }
 
 // ── 跳转系统设置页 ────────────────────────
-// 通过 <a href="intent://..."> 让 Android WebView 启动 Intent
-// Capacitor 默认会把 intent:// 链接交给系统处理
+// 原生平台：通过 SettingsOpenerPlugin 调用 startActivity(Intent)
+// Web 平台：使用 <a href="intent://..."> 兜底（PWA 环境较少使用）
 function openIntent(intentUri: string): void {
   if (typeof window === "undefined") return;
   // 创建一个隐藏的 <a> 标签触发 intent 跳转
@@ -115,18 +129,33 @@ function openIntent(intentUri: string): void {
 
 /**
  * 跳转到系统"电池优化"设置页
- * 用户可在此把"部落冲突升级助手"改为"不优化"
+ * 用户可在此把"部落小助手"改为"不优化"
  */
-export function openBatteryOptimizationSettings(): void {
-  // Android 标准 ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+export async function openBatteryOptimizationSettings(): Promise<void> {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await SettingsOpener.openBatteryOptimization();
+    } catch (e) {
+      console.warn("SettingsOpener.openBatteryOptimization 失败", e);
+    }
+    return;
+  }
+  // Web/PWA fallback
   openIntent("intent://settings#Intent;action=android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS;end");
 }
 
 /**
- * 跳转到当前 APP 的电池优化详情页（直接到本应用）
+ * 请求忽略电池优化（直接弹出系统对话框，针对本 APP）
  */
-export function openAppBatteryOptimizationSettings(): void {
-  // ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS 需要包名
+export async function openAppBatteryOptimizationSettings(): Promise<void> {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await SettingsOpener.requestIgnoreBatteryOptimizations();
+    } catch (e) {
+      console.warn("SettingsOpener.requestIgnoreBatteryOptimizations 失败", e);
+    }
+    return;
+  }
   openIntent("intent://settings#Intent;action=android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS;package=com.xueren.buluo;end");
 }
 
@@ -134,7 +163,16 @@ export function openAppBatteryOptimizationSettings(): void {
  * 跳转到厂商自启动管理页（小米/华为/OPPO/vivo/魅族）
  * 不同厂商 Intent 不同，按 manufacturer 分发
  */
-export function openAutostartSettings(manufacturer: Manufacturer): void {
+export async function openAutostartSettings(manufacturer: Manufacturer): Promise<void> {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await SettingsOpener.openAutostart({ manufacturer });
+    } catch (e) {
+      console.warn("SettingsOpener.openAutostart 失败", e);
+    }
+    return;
+  }
+  // Web/PWA fallback
   const intentMap: Partial<Record<Manufacturer, string>> = {
     xiaomi: "intent://settings#Intent;action=miui.intent.action.APP_AUTO_START;extra.miui:package_name:com.xueren.buluo;end",
     huawei: "intent://settings#Intent;action=huawei.intent.action.MANAGE_PROTECTED_APPS;end",
@@ -147,7 +185,6 @@ export function openAutostartSettings(manufacturer: Manufacturer): void {
   if (intent) {
     openIntent(intent);
   } else {
-    // 未知厂商：跳到通用设置
     openIntent("intent://settings#Intent;action=android.settings.SETTINGS;end");
   }
 }
@@ -156,7 +193,16 @@ export function openAutostartSettings(manufacturer: Manufacturer): void {
  * 跳转到厂商"省电策略"白名单页
  * 小米/华为/OPPO 等需要把 APP 加入"高耗电允许" / "省电策略白名单"
  */
-export function openPowerSaveWhitelistSettings(manufacturer: Manufacturer): void {
+export async function openPowerSaveWhitelistSettings(manufacturer: Manufacturer): Promise<void> {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await SettingsOpener.openPowerSaveWhitelist({ manufacturer });
+    } catch (e) {
+      console.warn("SettingsOpener.openPowerSaveWhitelist 失败", e);
+    }
+    return;
+  }
+  // Web/PWA fallback
   const intentMap: Partial<Record<Manufacturer, string>> = {
     xiaomi: "intent://settings#Intent;action=miui.intent.action.POWER_MODE;end",
     huawei: "intent://settings#Intent;action=huawei.intent.action.POWER_SAVING_MODE;end",
@@ -175,8 +221,16 @@ export function openPowerSaveWhitelistSettings(manufacturer: Manufacturer): void
 /**
  * 跳转到 APP 通知设置页（用于"通知没出现"时引导）
  */
-export function openAppNotificationSettings(): void {
-  // Android 8.0+ APP_NOTIFICATION_SETTINGS
+export async function openAppNotificationSettings(): Promise<void> {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await SettingsOpener.openAppNotificationSettings();
+    } catch (e) {
+      console.warn("SettingsOpener.openAppNotificationSettings 失败", e);
+    }
+    return;
+  }
+  // Web/PWA fallback
   openIntent("intent://settings#Intent;action=android.settings.APP_NOTIFICATION_SETTINGS;extra.android:app_package:com.xueren.buluo;extra.android:app_uid:0;end");
 }
 

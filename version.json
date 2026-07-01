@@ -1,7 +1,20 @@
 {
-  "version": "1.1.1",
-  "apkUrl": "https://github.com/xueren-ctrl/buluo/releases/tag/v1.1.1",
+  "version": "1.2.0",
+  "apkUrl": "https://github.com/xueren-ctrl/buluo/releases/tag/v1.2.0",
   "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-7-1",
+      "notes": [
+        "修复一键粘贴 JSON 在 APK 中不可用（集成 @capacitor/clipboard 原生插件）",
+        "修复雷电飞龙显示为超级法师的兵种 ID 映射错误",
+        "修复亡灵王子/大守护者英雄 ID 映射错误（28000002↔28000006 交换）",
+        "修复电池优化/通知设置按钮点击无反应（新增 SettingsOpener 原生插件）",
+        "新增通知健康状态面板（通知权限/后台服务/电池优化状态一览）",
+        "新增后台监督服务常驻通知（部落小助手正在监督您的升级项目）",
+        "增强玩家名字提取（支持 playerName/player.name/user.name 等多种字段路径）"
+      ]
+    },
     {
       "version": "1.1.1",
       "date": "2026-6-28",

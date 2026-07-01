@@ -66,7 +66,6 @@ import { EmptyState } from "@/components/EmptyState";
 import { BaseAnalysisPanel } from "@/components/BaseAnalysisPanel";
 import { BaseScoreCard } from "@/components/BaseScoreCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { NotifySettingsPanel } from "@/components/NotifySettingsPanel";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { Modal } from "@/components/Modal";
 
@@ -733,16 +732,7 @@ export default function HomePage() {
             {/* 工人 / 实验室 */}
             {idleTimes && <BuilderLabStatus idleTimes={idleTimes} />}
 
-            {/* 通知设置（Capacitor 本地通知：APP 关闭也能提醒）*/}
-            {notifyStatus && settings && (
-              <NotifySettingsPanel
-                status={notifyStatus}
-                settings={settings}
-                onUpdateSettings={updateSettings}
-                onEnableNotify={handleEnableNotify}
-                onClearNotifyState={handleClearNotifyState}
-              />
-            )}
+            {/* 通知设置已移至「设置」页面，主页不再显示 */}
 
             {/* 操作栏 */}
             <div className="w-full flex gap-2 mb-4">
