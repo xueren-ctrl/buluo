@@ -1,7 +1,14 @@
 {
-  "version": "1.2.5",
-  "apkUrl": "https://github.com/xueren-ctrl/buluo/releases/tag/v1.2.5",
+  "version": "1.2.6",
+  "apkUrl": "https://github.com/xueren-ctrl/buluo/releases/tag/v1.2.6",
   "changelog": [
+    {
+      "version": "1.2.6",
+      "date": "2026-11-22",
+      "notes": [
+        "新增月卡手动录入面板（可填开通日或剩余天数，首页显示剩余天数/小时倒计时，临期变色，进度条）"
+      ]
+    },
     {
       "version": "1.2.5",
       "date": "2026-7-8",
