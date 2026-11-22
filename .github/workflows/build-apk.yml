@@ -1,0 +1,90 @@
+name: Build Android APK
+
+# 草稿：电脑没了之后，用 GitHub Actions 在云端出 APK。
+# 触发方式：仓库 Actions 页手动 Run workflow，填 tag（如 v1.2.6）。
+# 不需要 Android Studio、不需要本地电脑。
+# 依赖的 Secrets（仓库 Settings → Secrets and variables → Actions 里建）：
+#   ANDROID_KEYSTORE_BASE64  新 keystore 的 base64（生成方法见同目录 README）
+#   KEYSTORE_PASSWORD        storePassword
+#   KEY_ALIAS                一般填 buluo
+#   KEY_PASSWORD             keyPassword
+# 注意：新 keystore 的签名和旧的 v1.2.5 不一样，老用户必须先卸载旧版再装新版，
+# 覆盖安装会报签名不一致。先把备份导入修好（见 README）再发新包。
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag，例如 v1.2.6"
+        required: true
+        default: "v1.2.6"
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK packages
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;36.1.0" "platform-tools"
+
+      - name: Build web
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Capacitor sync
+        working-directory: frontend
+        run: npx cap sync android
+
+      - name: Restore keystore from secrets
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/buluo.keystore
+          cat > android/keystore.properties <<EOF
+          storeFile=buluo.keystore
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          EOF
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: buluo-${{ inputs.tag }}
+          path: android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.tag }}
+          files: android/app/build/outputs/apk/release/app-release.apk
+          generate_release_notes: true
