@@ -67,6 +67,7 @@ import { BaseAnalysisPanel } from "@/components/BaseAnalysisPanel";
 import { BaseScoreCard } from "@/components/BaseScoreCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
+import { MonthlyCardPanel } from "@/components/MonthlyCardPanel";
 import { Modal } from "@/components/Modal";
 
 /* ================================================================
@@ -746,6 +747,8 @@ export default function HomePage() {
           />
         </div>
 
+        {/* ======== 月卡剩余天数（独立模块，不影响其他功能）======== */}
+        <MonthlyCardPanel />
         {/* ======== 升级数据面板 ======== */}
         {upgrades.length > 0 && (
           <div className="animate-fade-up space-y-4">
