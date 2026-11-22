@@ -15,6 +15,9 @@
  *  - accounts:    多账号支持（playerTag 索引）
  */
 
+import { saveMonthlyCard, clearMonthlyCard } from "./monthly-card";
+import type { MonthlyCardRecord } from "./monthly-card";
+
 // ── 数据库常量 ──────────────────────────────
 const DB_NAME = "CocUpgradeDB";
 const DB_VERSION = 4;
@@ -312,6 +315,10 @@ export async function clearNotifyState(): Promise<void> {
   await clear(STORE_NOTIFY_STATE);
 }
 
+export async function loadNotifyState(): Promise<NotifyStateRecord[]> {
+  return await getAll<NotifyStateRecord>(STORE_NOTIFY_STATE);
+}
+
 export async function deleteNotifyState(key: string): Promise<void> {
   await del(STORE_NOTIFY_STATE, key);
 }
@@ -480,6 +487,8 @@ export interface RestoredState {
 }
 
 export async function loadAll(): Promise<RestoredState> {
+  // 注意：history store 不参与备份——addHistory/loadHistory 全仓库无调用方，
+  // 该 store 恒为空；一旦以后启用历史功能，需把它加进导出与恢复。
   const [upgrades, userData, settings, notifyConfig, village] = await Promise.all([
     loadUpgrades(),
     loadUserData(),
@@ -498,5 +507,574 @@ export async function resetAll(): Promise<void> {
     STORE_VILLAGE, STORE_JSON_HISTORY, STORE_ACCOUNTS,
   ];
   await Promise.all(stores.map((s) => clear(s)));
-  _db = null;
+  // 注意：不要把 _db 置空——连接本身没坏，清空 store 不需要重开连接；
+  // 置空只会让下一次 open() 白白再建一条连接。
+}
+
+// ── 备份恢复（单事务 + 前置全量校验） ──────
+// 备份文件格式（设置页导出的 coc-backup-*.json）：
+//   _meta: { app: "coc-upgrade-reminder", version, schema, exported_at }
+//   state: loadAll() 的形状（upgrades / userData / settings / notifyConfig / village）
+//   json_history / accounts / notify_state: 各 store 的全部记录
+//   monthly_card: 月卡记录 | null（字段缺失 = 旧版备份，不含月卡）
+// 恢复流程：先完整校验全部字段形状（validateBackup），全部通过后在一个跨 store
+// 的 readwrite 事务里清空并写回——事务内任一 request 失败都会整体回滚，
+// 数据不会处于半清空状态。月卡存在 localStorage，不进 IDB 事务，
+// 由 restoreFullBackup 在事务成功提交后再落盘。
+
+export const BACKUP_APP_ID = "coc-upgrade-reminder";
+export const BACKUP_SCHEMA_VERSION = 1;
+
+/** 校验失败时抛出的错误；调用方可用它区分“文件无效（未做任何修改）”和“恢复中途失败”。 */
+export class BackupValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BackupValidationError";
+  }
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function isValidDateString(v: unknown): v is string {
+  return typeof v === "string" && v.length > 0 && !Number.isNaN(new Date(v).getTime());
+}
+
+function isValidTier(tier: string): tier is NotifyTier {
+  return tier === "pre_30m" || tier === "pre_10m" || tier === "complete" || tier === "post_complete";
+}
+
+export interface MonthlyCardRestore {
+  /** 备份里是否带 monthly_card 字段（缺失 = 旧版备份） */
+  present: boolean;
+  /** 校验通过的月卡记录；present 且为 null 表示备份里是 null → 应清除当前月卡 */
+  record: MonthlyCardRecord | null;
+  /** present 但内容非法 → 清除并提示 */
+  invalid: boolean;
+}
+
+export interface ParsedBackup {
+  state: {
+    upgrades: Array<Omit<RawUpgradeRecord, "id">>;
+    userData?: Omit<UserRecord, "uid">;
+    settings: SchedulerSettings;
+    notifyConfig: NotifyConfig;
+    village?: VillageRecord;
+  };
+  jsonHistory: Array<Omit<JsonHistoryRecord, "id">>;
+  accounts: AccountRecord[];
+  notifyState: NotifyStateRecord[];
+  monthlyCard: MonthlyCardRestore;
+  warnings: string[];
+}
+
+export interface RestoreCounts {
+  upgrades: number;
+  jsonHistory: number;
+  accounts: number;
+  notifyState: number;
+}
+
+export interface RestoreResult {
+  counts: RestoreCounts;
+  /** restored = 已写入备份里的月卡；cleared = 备份里无月卡/月卡无效，已清除当前月卡；kept = 旧版备份不含月卡字段，保留当前月卡 */
+  monthlyCard: "restored" | "cleared" | "kept";
+  warnings: string[];
+}
+
+function parseBackupText(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new BackupValidationError("备份文件不是有效的 JSON");
+  }
+}
+
+/** 校验并归一化备份对象。只做纯校验/归一化，不写任何数据；失败时抛 BackupValidationError。 */
+export function validateBackup(data: unknown): ParsedBackup {
+  if (!isPlainObject(data)) {
+    throw new BackupValidationError("备份文件不是有效的 JSON 对象");
+  }
+
+  // ── _meta：来源与版本 ──
+  const meta = data._meta;
+  if (!isPlainObject(meta)) {
+    throw new BackupValidationError("备份文件缺少标识（_meta），无法确认来源");
+  }
+  if (meta.app !== BACKUP_APP_ID) {
+    throw new BackupValidationError("不是本应用的备份文件");
+  }
+  if (meta.schema !== undefined) {
+    if (typeof meta.schema !== "number" || meta.schema > BACKUP_SCHEMA_VERSION) {
+      throw new BackupValidationError("此备份来自更新版本，可能不兼容");
+    }
+  }
+
+  // ── state ──
+  const rawState = data.state;
+  if (!isPlainObject(rawState)) {
+    throw new BackupValidationError("备份文件缺少 state");
+  }
+
+  // upgrades：必填数组，逐项校验形状（白名单归一化，不透传多余字段）
+  if (!Array.isArray(rawState.upgrades)) {
+    throw new BackupValidationError("备份中 upgrades 缺失或不是数组");
+  }
+  const upgrades: Array<Omit<RawUpgradeRecord, "id">> = rawState.upgrades.map((u, i) => {
+    if (!isPlainObject(u)) {
+      throw new BackupValidationError(`upgrades[${i}] 不是对象`);
+    }
+    if (typeof u.category !== "string" || !u.category) {
+      throw new BackupValidationError(`upgrades[${i}].category 非法`);
+    }
+    if (typeof u.item_name !== "string" || !u.item_name) {
+      throw new BackupValidationError(`upgrades[${i}].item_name 非法`);
+    }
+    if (typeof u.item_level !== "number" || !Number.isFinite(u.item_level)) {
+      throw new BackupValidationError(`upgrades[${i}].item_level 非法`);
+    }
+    if (!isValidDateString(u.finish_time)) {
+      throw new BackupValidationError(`upgrades[${i}].finish_time 非法`);
+    }
+    if (u.timer_seconds !== undefined && u.timer_seconds !== null && typeof u.timer_seconds !== "number") {
+      throw new BackupValidationError(`upgrades[${i}].timer_seconds 非法`);
+    }
+    if (u.notified !== undefined && typeof u.notified !== "boolean") {
+      throw new BackupValidationError(`upgrades[${i}].notified 非法`);
+    }
+    if (u.data_id !== undefined && u.data_id !== null && typeof u.data_id !== "number") {
+      throw new BackupValidationError(`upgrades[${i}].data_id 非法`);
+    }
+    return {
+      category: u.category,
+      item_name: u.item_name,
+      item_level: u.item_level,
+      finish_time: u.finish_time as string,
+      timer_seconds: typeof u.timer_seconds === "number" ? u.timer_seconds : null,
+      notified: typeof u.notified === "boolean" ? u.notified : false,
+      data_id: typeof u.data_id === "number" ? u.data_id : null,
+    };
+  });
+
+  // userData：可选；若存在则 client_id 必须为 string
+  let userData: Omit<UserRecord, "uid"> | undefined;
+  if (rawState.userData !== undefined && rawState.userData !== null) {
+    const u = rawState.userData;
+    if (!isPlainObject(u)) {
+      throw new BackupValidationError("state.userData 不是对象");
+    }
+    if (typeof u.client_id !== "string") {
+      throw new BackupValidationError("state.userData.client_id 非法");
+    }
+    const optStr = (v: unknown, name: string): string | null => {
+      if (v === undefined || v === null) return null;
+      if (typeof v !== "string") throw new BackupValidationError(`state.userData.${name} 非法`);
+      return v;
+    };
+    userData = {
+      client_id: u.client_id,
+      player_tag: optStr(u.player_tag, "player_tag"),
+      player_name: optStr(u.player_name, "player_name"),
+      last_json_raw: optStr(u.last_json_raw, "last_json_raw"),
+      last_upload_at: optStr(u.last_upload_at, "last_upload_at"),
+      last_sync_at: optStr(u.last_sync_at, "last_sync_at"),
+    };
+  }
+
+  // settings：可选（缺失用默认值）；若存在必须是普通对象，已知字段校验类型；
+  // 这里故意不透传 s.key（store 主键），恢复时由写入方固定写 "settings"
+  const SETTINGS_BOOL_KEYS = ["enablePre30m", "enablePre10m", "enableComplete", "enablePostComplete", "enableBatch", "dndEnabled"] as const;
+  const SETTINGS_NUM_KEYS = ["batchWindowMinutes", "dndStart", "dndEnd"] as const;
+  const SETTINGS_STR_KEYS = ["last_notify_at", "last_sync_at"] as const;
+  let settings: SchedulerSettings = { ...DEFAULT_SETTINGS };
+  if (rawState.settings !== undefined && rawState.settings !== null) {
+    const s = rawState.settings;
+    if (!isPlainObject(s)) {
+      throw new BackupValidationError("state.settings 不是对象");
+    }
+    const picked: Partial<SchedulerSettings> = {};
+    for (const k of SETTINGS_BOOL_KEYS) {
+      if (s[k] !== undefined && typeof s[k] !== "boolean") {
+        throw new BackupValidationError(`state.settings.${k} 非法`);
+      }
+      if (typeof s[k] === "boolean") picked[k] = s[k];
+    }
+    for (const k of SETTINGS_NUM_KEYS) {
+      if (s[k] !== undefined && (typeof s[k] !== "number" || !Number.isFinite(s[k]))) {
+        throw new BackupValidationError(`state.settings.${k} 非法`);
+      }
+      if (typeof s[k] === "number") picked[k] = s[k];
+    }
+    for (const k of SETTINGS_STR_KEYS) {
+      if (s[k] !== undefined && s[k] !== null && typeof s[k] !== "string") {
+        throw new BackupValidationError(`state.settings.${k} 非法`);
+      }
+      if (s[k] !== undefined) picked[k] = s[k] as string | null;
+    }
+    settings = { ...DEFAULT_SETTINGS, ...picked };
+  }
+
+  // notifyConfig：可选（缺失用默认值）
+  let notifyConfig: NotifyConfig = { browserNotifEnabled: false };
+  if (rawState.notifyConfig !== undefined && rawState.notifyConfig !== null) {
+    const n = rawState.notifyConfig;
+    if (!isPlainObject(n)) {
+      throw new BackupValidationError("state.notifyConfig 不是对象");
+    }
+    if (n.browserNotifEnabled !== undefined && typeof n.browserNotifEnabled !== "boolean") {
+      throw new BackupValidationError("state.notifyConfig.browserNotifEnabled 非法");
+    }
+    notifyConfig = { browserNotifEnabled: n.browserNotifEnabled === true };
+  }
+
+  // village：可选；若存在则 snapshot.items 必须是数组（否则首页 analyzeBase 会崩）
+  let village: VillageRecord | undefined;
+  if (rawState.village !== undefined && rawState.village !== null) {
+    const v = rawState.village;
+    if (!isPlainObject(v) || !isPlainObject(v.snapshot)) {
+      throw new BackupValidationError("state.village.snapshot 缺失或不是对象");
+    }
+    const snap = v.snapshot as Record<string, unknown>;
+    if (!isValidDateString(snap.capturedAt)) {
+      throw new BackupValidationError("state.village.snapshot.capturedAt 非法");
+    }
+    if (!Array.isArray(snap.items) || snap.items.some((it) => !isPlainObject(it))) {
+      throw new BackupValidationError("state.village.snapshot.items 非法");
+    }
+    village = {
+      key: "latest",
+      snapshot: snap as unknown as VillageRecord["snapshot"],
+      capturedAt: snap.capturedAt as string,
+    };
+  }
+
+  // ── json_history ──
+  const warnings: string[] = [];
+  const jsonHistory: Array<Omit<JsonHistoryRecord, "id">> = [];
+  if (data.json_history !== undefined && data.json_history !== null) {
+    if (!Array.isArray(data.json_history)) {
+      throw new BackupValidationError("json_history 不是数组");
+    }
+    if (data.json_history.length > 5) {
+      warnings.push(`备份中有 ${data.json_history.length} 条 JSON 历史，超过上限 5 条，将全部恢复`);
+    }
+    data.json_history.forEach((h, i) => {
+      if (!isPlainObject(h)) {
+        throw new BackupValidationError(`json_history[${i}] 不是对象`);
+      }
+      if (!isValidDateString(h.imported_at)) {
+        throw new BackupValidationError(`json_history[${i}].imported_at 非法`);
+      }
+      if (typeof h.player_tag !== "string") {
+        throw new BackupValidationError(`json_history[${i}].player_tag 非法`);
+      }
+      if (typeof h.json_raw !== "string") {
+        throw new BackupValidationError(`json_history[${i}].json_raw 非法`);
+      }
+      if (h.player_name !== undefined && typeof h.player_name !== "string") {
+        throw new BackupValidationError(`json_history[${i}].player_name 非法`);
+      }
+      if (h.town_hall_level !== undefined && typeof h.town_hall_level !== "number") {
+        throw new BackupValidationError(`json_history[${i}].town_hall_level 非法`);
+      }
+      if (h.active_upgrades !== undefined && typeof h.active_upgrades !== "number") {
+        throw new BackupValidationError(`json_history[${i}].active_upgrades 非法`);
+      }
+      if (h.base_score !== undefined && h.base_score !== null && typeof h.base_score !== "number") {
+        throw new BackupValidationError(`json_history[${i}].base_score 非法`);
+      }
+      if (h.base_grade !== undefined && h.base_grade !== null && typeof h.base_grade !== "string") {
+        throw new BackupValidationError(`json_history[${i}].base_grade 非法`);
+      }
+      jsonHistory.push({
+        imported_at: h.imported_at as string,
+        player_tag: h.player_tag as string,
+        player_name: typeof h.player_name === "string" ? h.player_name : "",
+        town_hall_level: typeof h.town_hall_level === "number" ? h.town_hall_level : 0,
+        json_raw: h.json_raw as string,
+        active_upgrades: typeof h.active_upgrades === "number" ? h.active_upgrades : 0,
+        base_score: typeof h.base_score === "number" ? h.base_score : null,
+        base_grade: typeof h.base_grade === "string" ? h.base_grade : null,
+      });
+    });
+  }
+
+  // ── accounts ──
+  const accounts: AccountRecord[] = [];
+  if (data.accounts !== undefined && data.accounts !== null) {
+    if (!Array.isArray(data.accounts)) {
+      throw new BackupValidationError("accounts 不是数组");
+    }
+    data.accounts.forEach((a, i) => {
+      if (!isPlainObject(a)) {
+        throw new BackupValidationError(`accounts[${i}] 不是对象`);
+      }
+      if (typeof a.player_tag !== "string") {
+        throw new BackupValidationError(`accounts[${i}].player_tag 非法`);
+      }
+      if (a.last_import_time !== undefined && !isValidDateString(a.last_import_time)) {
+        throw new BackupValidationError(`accounts[${i}].last_import_time 非法`);
+      }
+      if (a.player_name !== undefined && typeof a.player_name !== "string") {
+        throw new BackupValidationError(`accounts[${i}].player_name 非法`);
+      }
+      if (a.town_hall_level !== undefined && typeof a.town_hall_level !== "number") {
+        throw new BackupValidationError(`accounts[${i}].town_hall_level 非法`);
+      }
+      if (a.village_data !== undefined && a.village_data !== null && !isPlainObject(a.village_data)) {
+        throw new BackupValidationError(`accounts[${i}].village_data 非法`);
+      }
+      if (a.upgrades !== undefined && !Array.isArray(a.upgrades)) {
+        throw new BackupValidationError(`accounts[${i}].upgrades 非法`);
+      }
+      if (a.base_score !== undefined && a.base_score !== null && typeof a.base_score !== "number") {
+        throw new BackupValidationError(`accounts[${i}].base_score 非法`);
+      }
+      if (a.base_grade !== undefined && a.base_grade !== null && typeof a.base_grade !== "string") {
+        throw new BackupValidationError(`accounts[${i}].base_grade 非法`);
+      }
+      if (a.active !== undefined && typeof a.active !== "boolean") {
+        throw new BackupValidationError(`accounts[${i}].active 非法`);
+      }
+      if (a.json_raw !== undefined && a.json_raw !== null && typeof a.json_raw !== "string") {
+        throw new BackupValidationError(`accounts[${i}].json_raw 非法`);
+      }
+      accounts.push({
+        player_tag: (a.player_tag as string).trim() || ANON_TAG,
+        player_name: typeof a.player_name === "string" ? a.player_name : "",
+        town_hall_level: typeof a.town_hall_level === "number" ? a.town_hall_level : 0,
+        last_import_time: isValidDateString(a.last_import_time)
+          ? (a.last_import_time as string)
+          : new Date().toISOString(),
+        village_data: (a.village_data as AccountRecord["village_data"]) ?? null,
+        upgrades: Array.isArray(a.upgrades) ? (a.upgrades as AccountRecord["upgrades"]) : [],
+        base_score: typeof a.base_score === "number" ? a.base_score : null,
+        base_grade: typeof a.base_grade === "string" ? a.base_grade : null,
+        active: a.active === true,
+        json_raw: typeof a.json_raw === "string" ? a.json_raw : null,
+      });
+    });
+    // 主键去重：归一化后 player_tag 重复会互相覆盖，直接拒绝
+    const seen = new Set<string>();
+    for (const a of accounts) {
+      if (seen.has(a.player_tag)) {
+        throw new BackupValidationError(`accounts 中 player_tag "${a.player_tag}" 重复`);
+      }
+      seen.add(a.player_tag);
+    }
+    // 只保留最后一个 active=true（与 upsertAccount 逐条写入的语义一致）
+    let lastActive = -1;
+    accounts.forEach((a, i) => {
+      if (a.active) lastActive = i;
+    });
+    accounts.forEach((a, i) => {
+      a.active = i === lastActive;
+    });
+  }
+
+  // ── notify_state ──
+  // 去重记录损坏时跳过并提示即可：坏 key 只影响“某条通知可能重复发”，
+  // 不像 upgrades 那样会弄坏数据库，所以不因此拒绝整个备份。
+  const notifyState: NotifyStateRecord[] = [];
+  if (data.notify_state !== undefined && data.notify_state !== null) {
+    if (!Array.isArray(data.notify_state)) {
+      throw new BackupValidationError("notify_state 不是数组");
+    }
+    let skipped = 0;
+    data.notify_state.forEach((n) => {
+      if (!isPlainObject(n) || typeof n.key !== "string" || !n.key) {
+        skipped++;
+        return;
+      }
+      if (typeof n.firedAt !== "number" || !Number.isFinite(n.firedAt)) {
+        skipped++;
+        return;
+      }
+      const parts = (n.key as string).split(":");
+      if (
+        parts.length !== 4 ||
+        !parts[0] ||
+        (parts[1] !== "x" && Number.isNaN(Number(parts[1]))) ||
+        Number.isNaN(Number(parts[2])) ||
+        !isValidTier(parts[3])
+      ) {
+        skipped++;
+        return;
+      }
+      notifyState.push({ key: n.key as string, firedAt: n.firedAt as number });
+    });
+    if (skipped > 0) {
+      warnings.push(`已跳过 ${skipped} 条格式异常的通知去重记录`);
+    }
+  }
+
+  // ── monthly_card ──
+  // 字段存在 → 覆盖语义：合法则写入，null/非法则清除；
+  // 字段缺失（旧版备份）→ 不动 localStorage，调用方据此提示用户。
+  let monthlyCard: MonthlyCardRestore = { present: false, record: null, invalid: false };
+  if ("monthly_card" in data) {
+    const mc = data.monthly_card;
+    if (mc === null || mc === undefined) {
+      monthlyCard = { present: true, record: null, invalid: false };
+    } else if (!isPlainObject(mc)) {
+      monthlyCard = { present: true, record: null, invalid: true };
+    } else {
+      const a = new Date(mc.activatedAt as string).getTime();
+      const e = new Date(mc.expiredAt as string).getTime();
+      if (
+        typeof mc.activatedAt === "string" &&
+        typeof mc.expiredAt === "string" &&
+        !Number.isNaN(a) &&
+        !Number.isNaN(e) &&
+        e > a
+      ) {
+        // 只写三个白名单字段，不透传备份里的其它脏字段
+        monthlyCard = {
+          present: true,
+          record: {
+            activatedAt: mc.activatedAt as string,
+            expiredAt: mc.expiredAt as string,
+            ...(typeof mc.note === "string" ? { note: mc.note as string } : {}),
+          },
+          invalid: false,
+        };
+      } else {
+        monthlyCard = { present: true, record: null, invalid: true };
+      }
+    }
+    if (monthlyCard.invalid) {
+      warnings.push("备份中的月卡数据无效，已清除当前月卡");
+    }
+  }
+
+  return {
+    state: {
+      upgrades,
+      ...(userData ? { userData } : {}),
+      settings,
+      notifyConfig,
+      ...(village ? { village } : {}),
+    },
+    jsonHistory,
+    accounts,
+    notifyState,
+    monthlyCard,
+    warnings,
+  };
+}
+
+const RESTORE_STORES = [
+  STORE_UPGRADES,
+  STORE_USER_DATA,
+  STORE_HISTORY,
+  STORE_NOTIFY_CONFIG,
+  STORE_NOTIFY_STATE,
+  STORE_SETTINGS,
+  STORE_VILLAGE,
+  STORE_JSON_HISTORY,
+  STORE_ACCOUNTS,
+];
+
+/**
+ * 单事务恢复：先 clear 全部 9 个 store 再写回已校验的数据。
+ * 事务是原子的——任一 request 失败都会整体回滚，不会留下半清空的数据库。
+ * 注意：await 的只能是进行中的 IDB request（可保持事务存活），
+ * 中间不能 await 其它异步操作，否则事务会自动提交。
+ */
+async function restoreInOneTx(b: ParsedBackup): Promise<void> {
+  const db = await open();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(RESTORE_STORES, "readwrite");
+    const settled = new Promise<void>((res, rej) => {
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error ?? new Error("恢复事务失败"));
+      tx.onabort = () => rej(tx.error ?? new Error("恢复事务已中止"));
+    });
+    // settled 若被拒绝但无人 await（request 先报错时），避免未处理 rejection 告警
+    settled.catch(() => {});
+    const track = <T>(req: IDBRequest<T>): Promise<T> =>
+      new Promise<T>((res, rej) => {
+        req.onsuccess = () => res(req.result);
+        req.onerror = () => rej(req.error);
+      });
+    void (async () => {
+      try {
+        for (const s of RESTORE_STORES) tx.objectStore(s).clear();
+        for (const u of b.state.upgrades) {
+          await track(tx.objectStore(STORE_UPGRADES).put(u));
+        }
+        if (b.state.userData) {
+          await track(tx.objectStore(STORE_USER_DATA).put({ ...b.state.userData, uid: "default" }));
+        }
+        await track(tx.objectStore(STORE_SETTINGS).put({ key: "settings", ...b.state.settings }));
+        await track(
+          tx.objectStore(STORE_NOTIFY_CONFIG).put({ key: "notifyConfig", ...b.state.notifyConfig })
+        );
+        if (b.state.village) {
+          await track(tx.objectStore(STORE_VILLAGE).put(b.state.village));
+        }
+        for (const n of b.notifyState) {
+          await track(tx.objectStore(STORE_NOTIFY_STATE).put(n));
+        }
+        // 直接 put，不走 addJsonHistory 的 5 条淘汰逻辑（恢复不应静默丢数据）
+        for (const h of b.jsonHistory) {
+          await track(tx.objectStore(STORE_JSON_HISTORY).put(h));
+        }
+        for (const a of b.accounts) {
+          await track(tx.objectStore(STORE_ACCOUNTS).put(a));
+        }
+        await settled;
+        resolve();
+      } catch (e) {
+        try {
+          tx.abort();
+        } catch {
+          /* 事务已中止则忽略 */
+        }
+        reject(e instanceof Error ? e : new Error(String(e)));
+      }
+    })();
+  });
+}
+
+function countParsed(b: ParsedBackup): RestoreCounts {
+  return {
+    upgrades: b.state.upgrades.length,
+    jsonHistory: b.jsonHistory.length,
+    accounts: b.accounts.length,
+    notifyState: b.notifyState.length,
+  };
+}
+
+/**
+ * 仅恢复 IndexedDB 部分（接受已解析的备份对象；传字符串时先 JSON.parse）。
+ * 先完整校验再写库；校验失败不碰任何数据。
+ */
+export async function restoreBackup(data: unknown): Promise<{ counts: RestoreCounts; warnings: string[] }> {
+  const parsed = validateBackup(typeof data === "string" ? parseBackupText(data) : data);
+  await restoreInOneTx(parsed);
+  return { counts: countParsed(parsed), warnings: parsed.warnings };
+}
+
+/**
+ * 完整恢复：IndexedDB（单事务）+ 月卡（localStorage）。
+ * 月卡语义：备份里带 monthly_card 字段 → 覆盖（合法则写入，null/非法则清除）；
+ * 字段缺失（旧版备份）→ 保留当前月卡。月卡在 IDB 事务成功提交后才落盘，
+ * 事务失败时月卡保持原值。
+ */
+export async function restoreFullBackup(data: unknown): Promise<RestoreResult> {
+  const parsed = validateBackup(typeof data === "string" ? parseBackupText(data) : data);
+  await restoreInOneTx(parsed);
+  let monthlyCard: RestoreResult["monthlyCard"];
+  if (!parsed.monthlyCard.present) {
+    monthlyCard = "kept";
+  } else if (parsed.monthlyCard.record) {
+    saveMonthlyCard(parsed.monthlyCard.record);
+    monthlyCard = "restored";
+  } else {
+    clearMonthlyCard();
+    monthlyCard = "cleared";
+  }
+  return { counts: countParsed(parsed), monthlyCard, warnings: parsed.warnings };
 }
