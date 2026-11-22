@@ -38,6 +38,7 @@ import {
   type AccountRecord,
 } from "@/lib/indexeddb";
 import { createScheduler, type Scheduler } from "@/lib/upgrade-scheduler";
+import { clearMonthlyCard } from "@/lib/monthly-card";
 import {
   checkForUpdate,
   CURRENT_VERSION,
@@ -632,6 +633,7 @@ export default function HomePage() {
   const handleClearAll = async () => {
     if (!confirm("确定要清除所有本地数据吗? 此操作不可撤销。")) return;
     await resetAll();
+    clearMonthlyCard();
     setUpgrades([]);
     setIdleTimes(null);
     setPlayerInfo(null);
@@ -642,6 +644,8 @@ export default function HomePage() {
     schedulerRef.current?.reschedule([]);
     setExportTimeLabel(null);
     toast.success("所有数据已清除", { className: "toast-success" });
+    // 月卡面板只在挂载时读一次 localStorage，刷新页面让它同步消失
+    setTimeout(() => window.location.reload(), 800);
   };
 
   // ── 排序与分类 ───────────────────────
