@@ -79,7 +79,7 @@ jobs:
 
       - name: Restore keystore from secrets
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/buluo.keystore
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | tr -d '\r\n ' | base64 -d > android/buluo.keystore
           cat > android/keystore.properties <<EOF
           storeFile=buluo.keystore
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
