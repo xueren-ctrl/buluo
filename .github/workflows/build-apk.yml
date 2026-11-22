@@ -32,7 +32,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 注意：仓库装的 Capacitor CLI 要求 Node.js ≥ 22.0.0，
+          # 用 20 会在 Capacitor sync 步骤直接报错退出。
+          node-version: 22
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
