@@ -48,10 +48,17 @@ import {
   saveSettings,
   clearNotifyState,
   resetAll,
+  loadAll,
   loadJsonHistory,
   loadAllAccounts,
+  loadNotifyState,
+  restoreFullBackup,
+  validateBackup,
+  BackupValidationError,
+  BACKUP_SCHEMA_VERSION,
   type SchedulerSettings,
 } from "@/lib/indexeddb";
+import { loadMonthlyCard, clearMonthlyCard } from "@/lib/monthly-card";
 import { Capacitor } from "@capacitor/core";
 import { requestNotificationPermission, detectNotifyStatusAsync, scheduleTestNotification, type NotifyStatus } from "@/lib/notification-system";
 
@@ -203,21 +210,26 @@ export default function SettingsPage() {
   const handleExportData = useCallback(async () => {
     try {
       // 从 IndexedDB 导出全部数据为 JSON 文件
-      const { loadAll, loadJsonHistory, loadAllAccounts } = await import("@/lib/indexeddb");
-      const [all, history, accounts] = await Promise.all([
+      const [all, history, accounts, notifyState] = await Promise.all([
         loadAll(),
         loadJsonHistory(),
         loadAllAccounts(),
+        loadNotifyState(),
       ]);
+      // settings 里含 store 的 key 字段（"settings"），导出前剥掉，恢复时不再依赖它
+      const { key: _settingsKey, ...settingsExport } = all.settings as SchedulerSettings & { key?: string };
       const exportData = {
         _meta: {
           app: "coc-upgrade-reminder",
           version: CURRENT_VERSION,
+          schema: BACKUP_SCHEMA_VERSION,
           exported_at: new Date().toISOString(),
         },
-        state: all,
+        state: { ...all, settings: settingsExport },
         json_history: history,
         accounts,
+        notify_state: notifyState,
+        monthly_card: loadMonthlyCard(),
       };
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -244,37 +256,71 @@ export default function SettingsPage() {
     input.accept = "application/json,.json";
     input.style.display = "none";
     input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
       try {
+        const file = input.files?.[0];
+        if (!file) return;
         const text = await file.text();
-        const data = JSON.parse(text);
-        if (!data._meta || !data.state) {
-          toast.error("无效的备份文件", { className: "toast-error" });
+        let data: unknown;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          toast.error("备份文件不是有效的 JSON", { className: "toast-error" });
           return;
         }
+        // 先校验（纯校验，不写任何数据）：文件无效直接拒绝，不弹确认框
+        try {
+          validateBackup(data);
+        } catch (e) {
+          if (e instanceof BackupValidationError) {
+            toast.error("备份文件无效：" + e.message + "，没有修改任何数据", {
+              className: "toast-error",
+              duration: 5000,
+            });
+            return;
+          }
+          throw e;
+        }
         if (!confirm("导入将覆盖当前所有数据，确定继续吗？")) return;
-        // 简单实现：写入 sessionStorage 让首页重新初始化
-        sessionStorage.setItem("coc_restore_backup", text);
-        toast.success("备份已导入，正在刷新...", { className: "toast-success" });
+        // 统一恢复：IndexedDB 单事务 + 月卡（localStorage），失败整体回滚
+        const result = await restoreFullBackup(data);
+        const notes: string[] = [];
+        if (result.monthlyCard === "kept") notes.push("此备份不含月卡数据，已保留当前月卡");
+        if (result.monthlyCard === "cleared") notes.push("备份中无月卡数据，已清除当前月卡");
+        notes.push(...result.warnings);
+        toast.success(
+          `备份已导入（升级 ${result.counts.upgrades} 条、账号 ${result.counts.accounts} 个），正在刷新...` +
+            (notes.length ? `（${notes.join("；")}）` : ""),
+          { className: "toast-success", duration: 5000 }
+        );
         setTimeout(() => window.location.reload(), 800);
       } catch (e) {
-        toast.error("导入失败：" + (e instanceof Error ? e.message : String(e)), {
-          className: "toast-error",
-          duration: 5000,
-        });
+        if (e instanceof BackupValidationError) {
+          toast.error("备份文件无效：" + e.message + "，没有修改任何数据", {
+            className: "toast-error",
+            duration: 5000,
+          });
+        } else {
+          toast.error("导入失败，本地数据可能已被部分清除，请立即重新导入备份", {
+            className: "toast-error",
+            duration: 8000,
+          });
+        }
+        console.error(e);
+      } finally {
+        // 处理完再移除 input（之前 1s 定时移除可能在文件选择框还开着时就删掉元素）
+        input.remove();
       }
     };
     document.body.appendChild(input);
     input.click();
-    setTimeout(() => document.body.removeChild(input), 1000);
   }, []);
 
   const handleClearAll = useCallback(async () => {
-    if (!confirm("⚠️ 确定要清空所有本地数据吗？\n\n这将永久删除：\n• 所有升级记录\n• 玩家信息\n• 历史记录\n• 账号信息\n• 通知设置\n\n此操作不可撤销！")) return;
+    if (!confirm("⚠️ 确定要清空所有本地数据吗？\n\n这将永久删除：\n• 所有升级记录\n• 玩家信息\n• 历史记录\n• 账号信息\n• 通知设置\n• 月卡信息\n\n此操作不可撤销！")) return;
     if (!confirm("再次确认：这将永久删除所有数据，确定继续吗？")) return;
     try {
       await resetAll();
+      clearMonthlyCard();
       toast.success("所有数据已清除", { className: "toast-success" });
       setTimeout(() => router.push("/"), 1000);
     } catch (e) {
