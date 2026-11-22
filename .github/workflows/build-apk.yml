@@ -84,7 +84,10 @@ jobs:
           storeFile=buluo.keystore
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
+          # 注意：这个 keystore 是 PKCS12 格式，生成时 keytool 会忽略单独的 keypass，
+          # 密钥实际用 storePassword 保护，所以 keyPassword 必须和 storePassword 填一样的，
+          # 否则打包签名时会报 "Given final block not properly padded"。
+          keyPassword=${{ secrets.KEYSTORE_PASSWORD }}
           EOF
 
       - name: Link node_modules for Gradle resolution
