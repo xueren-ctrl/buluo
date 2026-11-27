@@ -60,10 +60,12 @@ export function UpgradeList({ items }: { items: UpgradeItem[] }) {
               </div>
               <div className="space-y-2">
                 {groupItems.map((upg) => (
-                  <UpgradeCard
+                  <div
                     key={`${upg.category}-${upg.data_id ?? upg.item_name}-${upg.item_level}`}
-                    item={upg}
-                  />
+                    className="timeline-item"
+                  >
+                    <UpgradeCard item={upg} />
+                  </div>
                 ))}
               </div>
             </div>

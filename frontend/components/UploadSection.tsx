@@ -84,7 +84,7 @@ export function UploadSection({
               disabled={loading}
               className="coc-btn flex-1 text-sm py-2.5"
             >
-              {loading ? "解析中..." : "粘贴 JSON"}
+              {loading ? (<><span className="btn-spinner" />解析中...</>) : "粘贴 JSON"}
             </button>
             <button
               onClick={() => setExpanded(true)}
@@ -112,7 +112,7 @@ export function UploadSection({
                 disabled={loading || !jsonInput.trim()}
                 className="coc-btn flex-1 text-sm py-2.5"
               >
-                {loading ? "解析中..." : "开始解析"}
+                {loading ? (<><span className="btn-spinner" />解析中...</>) : "开始解析"}
               </button>
               <button
                 onClick={() => { onJsonChange(""); setExpanded(false); }}

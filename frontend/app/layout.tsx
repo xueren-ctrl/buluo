@@ -50,6 +50,18 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen gradient-bg antialiased">
+        {/* 启动闪屏：首屏 JS 加载完成前显示，加载后淡出 */}
+        <div id="boot-splash" aria-hidden="true">
+          <img src="/icons/icon-192.png" alt="" />
+          <div className="boot-title">部落小助手</div>
+          <div className="boot-sub">升级规划 · 本地提醒</div>
+          <div className="boot-bar"><i /></div>
+        </div>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){function h(){var s=document.getElementById('boot-splash');if(s)s.classList.add('done');}window.addEventListener('load',function(){setTimeout(h,350)});setTimeout(h,2500);})();`,
+          }}
+        />
         <ThemeProvider
           attribute="data-theme"
           defaultTheme="system"
