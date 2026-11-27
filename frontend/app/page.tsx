@@ -42,6 +42,7 @@ import { clearMonthlyCard } from "@/lib/monthly-card";
 import {
   checkForUpdate,
   CURRENT_VERSION,
+  isNativeApp,
   openApkDownload,
   openReleasesPage,
   formatApkSize,
@@ -722,6 +723,15 @@ export default function HomePage() {
           <p className="text-sub text-xs md:text-sm">
             上传 JSON · 自动分析基地 · 本地通知提醒
           </p>
+          {!isNativeApp() && (
+            <a
+              href="/app-release.apk"
+              download={`buluo-${CURRENT_VERSION}.apk`}
+              className="coc-btn-secondary text-xs mt-3"
+            >
+              📥 下载安卓 APK v{CURRENT_VERSION}
+            </a>
+          )}
           {playerInfo && (
             <p className="mt-2 text-xs text-muted flex flex-wrap items-center gap-x-1.5 gap-y-1">
               <span>
