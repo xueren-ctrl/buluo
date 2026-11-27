@@ -785,28 +785,41 @@ export default function SettingsPage() {
         </footer>
       </main>
 
-      {/* ======== 更新弹窗 ======== */}
+      {/* ======== 更新弹窗（查看更新日志时复用：无新版本时标题改为“更新日志”，避免误报） ======== */}
       <Modal
         open={showUpdateModal}
         onClose={() => setShowUpdateModal(false)}
-        title={`发现新版本 ${updateResult?.latestTag ?? ""}`}
+        title={
+          updateResult?.hasUpdate
+            ? `发现新版本 ${updateResult?.latestTag ?? ""}`
+            : `更新日志 ${updateResult?.latestTag ?? ""}`
+        }
         maxWidth="max-w-lg"
         footer={
-          <>
+          updateResult?.hasUpdate ? (
+            <>
+              <button
+                onClick={() => setShowUpdateModal(false)}
+                className="coc-btn-secondary text-xs !py-2 !px-4"
+              >
+                稍后提醒
+              </button>
+              <button
+                onClick={handleUpdateDownload}
+                disabled={downloadProgress !== null}
+                className="coc-btn text-xs !py-2 !px-4"
+              >
+                {downloadProgress !== null ? `下载中 ${downloadProgress}%` : "立即更新"}
+              </button>
+            </>
+          ) : (
             <button
               onClick={() => setShowUpdateModal(false)}
-              className="coc-btn-secondary text-xs !py-2 !px-4"
-            >
-              稍后提醒
-            </button>
-            <button
-              onClick={handleUpdateDownload}
-              disabled={downloadProgress !== null}
               className="coc-btn text-xs !py-2 !px-4"
             >
-              {downloadProgress !== null ? `下载中 ${downloadProgress}%` : "立即更新"}
+              关闭
             </button>
-          </>
+          )
         }
       >
         {updateResult?.release && (

@@ -112,10 +112,29 @@ jobs:
           name: buluo-${{ inputs.tag }}
           path: android/app/build/outputs/apk/release/app-release.apk
 
+      - name: Build release notes from version.json
+        run: |
+          # 发版说明用 version.json 里的 changelog（真实更新内容），
+          # 不用 GitHub 自动生成的对比链接（我们直接推 main、无 PR，自动生成的正文只剩一条网址）。
+          python3 - <<'PY'
+          import json
+          tag = "${{ inputs.tag }}".lstrip("v")
+          d = json.load(open("version.json", encoding="utf-8"))
+          entry = next((c for c in d.get("changelog", []) if str(c.get("version")) == tag), None)
+          lines = ["## v" + tag + (f" ({entry['date']})" if entry and entry.get("date") else "")]
+          if entry:
+              for n in entry.get("notes", []):
+                  lines.append(f"- {n}")
+          else:
+              lines.append("- 维护版本发布")
+          open("release-notes.md", "w", encoding="utf-8").write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+          PY
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
           name: ${{ inputs.tag }}
           files: android/app/build/outputs/apk/release/app-release.apk
-          generate_release_notes: true
+          body_path: release-notes.md
