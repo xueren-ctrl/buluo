@@ -12,17 +12,10 @@ export function NextCompletingCard({ item }: { item: UpgradeItem }) {
 
   return (
     <div
-      className={`coc-card p-3 ${done ? "coc-completed" : ""}`}
-      style={!done ? { borderColor: "var(--color-danger)" } : undefined}
+      className={`coc-card p-3 ${done ? "coc-completed" : "coc-card-highlight"}`}
     >
       <div className="flex items-center gap-3">
-        <div
-          className="w-10 h-10 rounded flex items-center justify-center text-xl flex-shrink-0"
-          style={{
-            background: "var(--bg-panel-alt)",
-            border: "1px solid var(--border-gold)",
-          }}
-        >
+        <div className="coc-icon-tile w-11 h-11 flex items-center justify-center text-xl flex-shrink-0">
           {display.icon}
         </div>
         <div className="flex-1 min-w-0">

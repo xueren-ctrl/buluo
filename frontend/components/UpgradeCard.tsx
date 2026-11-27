@@ -20,18 +20,11 @@ export function UpgradeCard({ item }: { item: UpgradeItem }) {
 
   return (
     <div
-      className={`coc-card p-2.5 ${done ? "coc-completed" : ""}`}
-      style={isUrgent ? { borderColor: "var(--color-danger)" } : undefined}
+      className={`coc-card p-2.5 ${done ? "coc-completed" : ""} ${isUrgent ? "coc-card-urgent" : ""}`}
     >
       <div className="flex items-center gap-2.5">
         {/* 图标 */}
-        <div
-          className="flex-shrink-0 w-9 h-9 rounded flex items-center justify-center text-lg"
-          style={{
-            background: "var(--bg-panel-alt)",
-            border: "1px solid var(--border-light)",
-          }}
-        >
+        <div className="coc-icon-tile flex-shrink-0 w-10 h-10 flex items-center justify-center text-lg">
           {display.icon}
         </div>
 

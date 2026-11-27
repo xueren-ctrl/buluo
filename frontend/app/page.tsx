@@ -147,6 +147,9 @@ export default function HomePage() {
   const [updateResult, setUpdateResult] = useState<UpdateCheckResult | null>(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
 
+  // ── 启动完成：IndexedDB 恢复结束前不闪空状态，显示骨架屏 ──
+  const [booted, setBooted] = useState(false);
+
   const schedulerRef = useRef<Scheduler | null>(null);
 
   // ── 实时倒计时 ────────────────────────
@@ -244,6 +247,8 @@ export default function HomePage() {
       } catch {
         // ignore
       }
+
+      if (!cancelled) setBooted(true);
     }
 
     init();
@@ -704,7 +709,13 @@ export default function HomePage() {
         </div>
 
         {/* ======== Hero 区域 ======== */}
-        <header className="text-center mb-5">
+        <header className="text-center mb-5 animate-fade-up">
+          <img
+            src="/icons/icon-192.png"
+            alt="部落小助手"
+            className="w-14 h-14 rounded-[16px] mx-auto mb-2.5"
+            style={{ boxShadow: "var(--shadow-lift)" }}
+          />
           <h1 className="coc-hero-title text-xl md:text-2xl mb-1">
             部落冲突升级规划助手
           </h1>
@@ -794,7 +805,7 @@ export default function HomePage() {
             {/* 操作栏 */}
             <div className="w-full flex gap-2 mb-4">
               <button onClick={handleRefresh} disabled={loading} className="coc-btn-secondary flex-1 py-2 text-sm">
-                {loading ? "解析中..." : "重新解析"}
+                {loading ? (<><span className="btn-spinner" />解析中...</>) : "重新解析"}
               </button>
             </div>
 
@@ -821,7 +832,7 @@ export default function HomePage() {
         {/* ======== 工具栏 ======== */}
         {upgrades.length > 0 && (
           <div className="w-full flex gap-2 mb-4 animate-fade-up">
-            <button onClick={handleClearAll} className="coc-btn-secondary text-xs py-2 flex-1 text-danger">
+            <button onClick={handleClearAll} className="coc-btn-danger text-xs py-2 flex-1">
               清除所有数据
             </button>
           </div>
@@ -830,16 +841,24 @@ export default function HomePage() {
         {/* ======== 教程区 ======== */}
         <CollapsibleGuide />
 
-        {/* ======== 空状态 ======== */}
-        {upgrades.length === 0 && !loading && (
+        {/* ======== 空状态（启动恢复完成后再判断，避免闪一下） ======== */}
+        {booted && upgrades.length === 0 && !loading && (
           <EmptyState title="暂无升级数据" desc="请在上方粘贴 CoC JSON 数据开始追踪" />
         )}
 
-        {/* ======== Loading ======== */}
-        {loading && upgrades.length === 0 && (
-          <div className="w-full max-w-sm py-16 flex flex-col items-center gap-3">
-            <div className="skeleton w-12 h-12 rounded-full" />
-            <div className="skeleton w-40 h-3 rounded-full" />
+        {/* ======== Loading / 启动骨架 ======== */}
+        {((!booted && upgrades.length === 0) || (loading && upgrades.length === 0)) && (
+          <div className="w-full space-y-2.5 py-2">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="coc-card p-2.5 flex items-center gap-2.5">
+                <div className="skeleton w-10 h-10 rounded-xl flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="skeleton h-3 w-2/3 rounded-full" />
+                  <div className="skeleton h-2.5 w-1/3 rounded-full" />
+                </div>
+                <div className="skeleton h-5 w-14 rounded-full flex-shrink-0" />
+              </div>
+            ))}
           </div>
         )}
 
