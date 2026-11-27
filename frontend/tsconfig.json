@@ -20,6 +20,8 @@
       "@/types": ["../shared/types"],
       "@/types/*": ["../shared/types/*"],
       "@capacitor/core": ["./node_modules/@capacitor/core"],
+      "@capacitor/filesystem": ["./node_modules/@capacitor/filesystem"],
+      "@capacitor-community/file-opener": ["./node_modules/@capacitor-community/file-opener"],
       "@capacitor/local-notifications": ["./node_modules/@capacitor/local-notifications"]
     }
   },

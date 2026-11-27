@@ -51,6 +51,9 @@
     <!-- Capacitor 默认 -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- 应用内更新：调起系统安装器安装下载的 APK（Android 8+ 必需，首次会弹系统授权）-->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <!-- 本地通知（Android 13+ POST_NOTIFICATIONS 必需）-->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 

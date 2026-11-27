@@ -51,6 +51,10 @@ import {
   type UpdateCheckResult,
 } from "@/lib/update-checker";
 import {
+  downloadAndInstallApk,
+  SITE_APK_URL,
+} from "@/lib/in-app-update";
+import {
   detectBatteryOptimization,
   openBatteryOptimizationSettings,
   type BatteryOptimizationStatus,
@@ -147,6 +151,8 @@ export default function HomePage() {
   const [showBatteryDialog, setShowBatteryDialog] = useState(false);
   const [updateResult, setUpdateResult] = useState<UpdateCheckResult | null>(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  // 应用内下载进度（null = 未在下载）
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
 
   // ── 启动完成：IndexedDB 恢复结束前不闪空状态，显示骨架屏 ──
   const [booted, setBooted] = useState(false);
@@ -635,6 +641,42 @@ export default function HomePage() {
     }
   };
 
+  // ── 更新下载：原生端应用内下载安装，网站端仍用浏览器直链 ──
+  const handleUpdateDownload = async () => {
+    if (!isNativeApp()) {
+      if (updateResult?.apkUrl) {
+        openApkDownload(updateResult.apkUrl);
+        toast.success("正在打开浏览器下载...", { className: "toast-success" });
+      } else {
+        openReleasesPage();
+      }
+      setShowUpdateModal(false);
+      return;
+    }
+    if (downloadProgress !== null) return;
+    setDownloadProgress(0);
+    try {
+      const urls = [updateResult?.apkUrl, SITE_APK_URL].filter(
+        (u): u is string => !!u
+      );
+      await downloadAndInstallApk(urls, (p) =>
+        setDownloadProgress(p.percent >= 0 ? p.percent : 0)
+      );
+      toast.success("下载完成，正在打开安装…", { className: "toast-success" });
+    } catch {
+      // 应用内下载失败：回退浏览器下载
+      if (updateResult?.apkUrl) {
+        openApkDownload(updateResult.apkUrl);
+        toast("应用内下载失败，已改用浏览器下载", { icon: "⚠️" });
+      } else {
+        openReleasesPage();
+      }
+    } finally {
+      setDownloadProgress(null);
+      setShowUpdateModal(false);
+    }
+  };
+
   // ── 清除所有本地数据 ──────────────────
   const handleClearAll = async () => {
     if (!confirm("确定要清除所有本地数据吗? 此操作不可撤销。")) return;
@@ -945,18 +987,11 @@ export default function HomePage() {
               稍后提醒
             </button>
             <button
-              onClick={() => {
-                if (updateResult?.apkUrl) {
-                  openApkDownload(updateResult.apkUrl);
-                  toast.success("正在打开浏览器下载...", { className: "toast-success" });
-                } else {
-                  openReleasesPage();
-                }
-                setShowUpdateModal(false);
-              }}
+              onClick={handleUpdateDownload}
+              disabled={downloadProgress !== null}
               className="coc-btn text-xs !py-2 !px-4"
             >
-              立即更新
+              {downloadProgress !== null ? `下载中 ${downloadProgress}%` : "立即更新"}
             </button>
           </>
         }
@@ -981,6 +1016,20 @@ export default function HomePage() {
                 <p className="text-main">{updateResult.apkSize ? formatApkSize(updateResult.apkSize) : "—"}</p>
               </div>
             </div>
+            {downloadProgress !== null && (
+              <div>
+                <div
+                  className="h-2 rounded-full overflow-hidden"
+                  style={{ background: "var(--bg-panel-alt)" }}
+                >
+                  <div
+                    className="h-full rounded-full transition-all duration-200"
+                    style={{ width: `${downloadProgress}%`, background: "var(--btn-green)" }}
+                  />
+                </div>
+                <p className="text-[11px] text-muted mt-1">正在应用内下载安装包，请勿关闭页面…</p>
+              </div>
+            )}
             <div>
               <p className="text-xs text-muted mb-1 font-semibold">更新日志</p>
               <div
