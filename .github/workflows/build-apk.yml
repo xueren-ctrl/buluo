@@ -65,6 +65,16 @@ jobs:
           npm ci
           npm run build
 
+      - name: Exclude site APK from app bundle
+        working-directory: frontend
+        run: |
+          # frontend/public/app-release.apk 是网站自带的下载文件，
+          # 构建时会进 out/，cap sync 会把它整个打进 APP，
+          # 导致每个新版 APK 里都嵌着上一个 APK、越长越大
+          #（实测：v1.2.10 的 10.6MB 里有 7.2MB 是嵌着的 v1.2.9 APK）。
+          # Pages 部署用自己的构建（deploy-cloudflare.yml），不受影响。
+          rm -f out/app-release.apk
+
       - name: Capacitor sync
         working-directory: frontend
         run: |
