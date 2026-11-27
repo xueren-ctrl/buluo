@@ -9,6 +9,7 @@ import { EmptyState } from "./EmptyState";
 const CATEGORY_ORDER: { key: string; label: string; icon: string }[] = [
   { key: "buildings", label: "建筑", icon: "🏰" },
   { key: "heroes", label: "英雄", icon: "⚔️" },
+  { key: "guardians", label: "守卫", icon: "🗿" },
   { key: "spells", label: "法术", icon: "⚗️" },
   { key: "pets", label: "战宠", icon: "🐾" },
   { key: "equipment", label: "装备", icon: "🛡️" },

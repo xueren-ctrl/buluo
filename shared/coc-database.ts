@@ -2,7 +2,7 @@
  * CoC 游戏数值数据库 — 接口定义与查询函数
  * ============================================
  * 类型来源：本文件定义 CocItemDef / BuildCategory
- * 数据来源：./coc-database-data.ts（182 项静态数据）
+ * 数据来源：./coc-database-data.ts（218 项静态数据）
  *
  * 查询函数：
  *  - getItemDef(scId)            按 SC ID 查单项定义

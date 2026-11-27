@@ -5,9 +5,10 @@
  * ID 真相来源：backend/app/assets/building_map.json（已用真实游戏 JSON 验证）
  *
  * SC ID 位数规则（验证后）：
- * - buildings:      1000000+   (7 位, 1000000~1000093)
+ * - buildings:      1000000+   (7 位, 1000000~1000102)
  * - spells:         26000000+  (8 位)
  * - heroes:         28000000+  (8 位)
+ * - guardians:      107000000+ (9 位)
  * - pets:           73000000+  (8 位)
  * - equipment:      106000000+ (9 位)
  * - helpers:        124000000+ (9 位)
@@ -66,7 +67,7 @@ const BUILDING_MAP: AssetMap = {
   1000031: { zh: "天鹰火炮", en: "Eagle Artillery", type: "buildings", color: "red", icon: "🦅" },
   1000032: { zh: "炸弹塔", en: "Bomb Tower", type: "buildings", color: "red", icon: "💣" },
   1000059: { zh: "战车工坊", en: "Workshop", type: "buildings", color: "zinc", icon: "🏗️" },
-  1000064: { zh: "小博木屋", en: "Forge", type: "buildings", color: "amber", icon: "🔨" },
+  1000064: { zh: "小博木屋", en: "B.O.B's Hut", type: "buildings", color: "amber", icon: "🔨" },
   1000067: { zh: "投石炮", en: "Scattershot", type: "buildings", color: "red", icon: "🪨" },
   1000068: { zh: "战宠小屋", en: "Pet House", type: "buildings", color: "emerald", icon: "🐾" },
   1000070: { zh: "铁匠铺", en: "Blacksmith", type: "buildings", color: "violet", icon: "⚒️" },
@@ -74,6 +75,15 @@ const BUILDING_MAP: AssetMap = {
   1000072: { zh: "法术塔", en: "Spell Tower", type: "buildings", color: "indigo", icon: "🔮" },
   1000077: { zh: "擎天巨柱", en: "Monolith", type: "buildings", color: "red", icon: "🗿" },
   1000093: { zh: "帮手小屋", en: "Helper Hut", type: "buildings", color: "rose", icon: "🔧" },
+  // TH19 新增防御（游戏数据包 SC ID；中文名尚未核实，暂用英文）
+  1000084: { zh: "Multi-Archer Tower", en: "Multi-Archer Tower", type: "buildings", color: "red", icon: "🏹" },
+  1000079: { zh: "Multi-Gear Tower", en: "Multi-Gear Tower", type: "buildings", color: "red", icon: "⚙️" },
+  1000085: { zh: "Ricochet Cannon", en: "Ricochet Cannon", type: "buildings", color: "red", icon: "💥" },
+  1000089: { zh: "Firespitter", en: "Firespitter", type: "buildings", color: "red", icon: "🔥" },
+  1000086: { zh: "Revenge Tower", en: "Revenge Tower", type: "buildings", color: "red", icon: "😡" },
+  1000102: { zh: "Super Wizard Tower", en: "Super Wizard Tower", type: "buildings", color: "red", icon: "🔮" },
+  // 小队训练营：2026-11-27 用户实导确认（#QG9U2G00U，0 级在建）
+  1000106: { zh: "小队训练营", en: "Squad Barracks", type: "buildings", color: "amber", icon: "👥" },
 };
 
 // 法术 spells (26000xxx)
@@ -92,6 +102,11 @@ const SPELL_MAP: AssetMap = {
   26000035: { zh: "隐身法术", en: "Invisibility Spell", type: "spells", color: "violet", icon: "👻" },
   26000053: { zh: "回溯法术", en: "Recall Spell", type: "spells", color: "indigo", icon: "🔁" },
   26000070: { zh: "蔓生法术", en: "Overgrowth Spell", type: "spells", color: "emerald", icon: "🌱" },
+  // TH19 新增法术（游戏数据包 SC ID；图腾/复活/愤怒为直译中文名，冰块法术中文名未核实）
+  26000120: { zh: "图腾法术", en: "Totem Spell", type: "spells", color: "indigo", icon: "🗿" },
+  26000098: { zh: "复活法术", en: "Revive Spell", type: "spells", color: "indigo", icon: "💗" },
+  26000109: { zh: "Ice Block Spell", en: "Ice Block Spell", type: "spells", color: "indigo", icon: "🧊" },
+  26000123: { zh: "愤怒法术", en: "Angry Spell", type: "spells", color: "indigo", icon: "😡" },
 };
 
 // 英雄 heroes (28000xxx)
@@ -103,6 +118,12 @@ const HERO_MAP: AssetMap = {
   28000002: { zh: "永王", en: "Grand Warden", type: "heroes", color: "yellow", icon: "🧙" },
   28000004: { zh: "闰土", en: "Royal Champion", type: "heroes", color: "yellow", icon: "🛡️" },
   28000006: { zh: "王子", en: "Minion Prince", type: "heroes", color: "yellow", icon: "🦇" },
+  // TH19 新增英雄：龙公爵（游戏数据包 SC ID）
+  28000007: { zh: "龙公爵", en: "Dragon Duke", type: "heroes", color: "yellow", icon: "🐉" },
+  // 守卫备用映射：若导出 JSON 把守卫归入 heroes 类别时使用
+  107000000: { zh: "Longshot", en: "Longshot", type: "heroes", color: "yellow", icon: "🎯" },
+  107000001: { zh: "粉碎者", en: "Smasher", type: "heroes", color: "yellow", icon: "🔨" },
+  107000008: { zh: "Logger", en: "Logger", type: "heroes", color: "yellow", icon: "🪓" },
 };
 
 // 宠物 pets (73000xxx)
@@ -118,50 +139,56 @@ const PET_MAP: AssetMap = {
   73000008: { zh: "灵狐", en: "Spirit Fox", type: "pets", color: "emerald", icon: "🦊" },
   73000009: { zh: "水母", en: "Angry Jelly", type: "pets", color: "emerald", icon: "🪼" },
   73000010: { zh: "啾啾", en: "Sneezy", type: "pets", color: "emerald", icon: "🤧" },
+  // TH19 新增战宠：贪婪乌鸦（游戏数据包 SC ID；中文名未核实）
+  73000017: { zh: "Greedy Raven", en: "Greedy Raven", type: "pets", color: "emerald", icon: "🐦‍⬛" },
 };
 
 // 装备 equipment (106000xxx) — 含稀有度，名称核对自官方简中
 const EQUIPMENT_MAP: AssetMap = {
   106000000: { zh: "野蛮人玩偶", en: "Barbarian Puppet", type: "equipment", color: "violet", icon: "👊", rarity: "common" },
   106000001: { zh: "狂暴药瓶", en: "Rage Vial", type: "equipment", color: "violet", icon: "😡", rarity: "common" },
-  106000002: { zh: "弓箭手玩偶", en: "Archer Puppet", type: "equipment", color: "violet", icon: "🏹", rarity: "common" },
-  106000003: { zh: "隐身药瓶", en: "Invisibility Vial", type: "equipment", color: "violet", icon: "👻", rarity: "common" },
-  106000004: { zh: "永恒之书", en: "Eternal Tome", type: "equipment", color: "violet", icon: "📖", rarity: "epic" },
+  106000002: { zh: "弓箭手木偶", en: "Archer Puppet", type: "equipment", color: "violet", icon: "🏹", rarity: "common" },
+  106000003: { zh: "隐形药水瓶", en: "Invisibility Vial", type: "equipment", color: "violet", icon: "👻", rarity: "common" },
+  106000004: { zh: "永恒书卷", en: "Eternal Tome", type: "equipment", color: "violet", icon: "📖", rarity: "epic" },
   106000005: { zh: "生命宝石", en: "Life Gem", type: "equipment", color: "violet", icon: "💎", rarity: "common" },
-  106000006: { zh: "追踪之盾", en: "Seeking Shield", type: "equipment", color: "violet", icon: "🛡️", rarity: "epic" },
+  106000006: { zh: "寻踪飞盾", en: "Seeking Shield", type: "equipment", color: "violet", icon: "🛡️", rarity: "epic" },
   106000007: { zh: "皇家宝石", en: "Royal Gem", type: "equipment", color: "violet", icon: "💎", rarity: "epic" },
-  106000008: { zh: "地震靴", en: "Earthquake Boots", type: "equipment", color: "violet", icon: "🥾", rarity: "epic" },
-  106000009: { zh: "野猪骑士玩偶", en: "Hog Rider Puppet", type: "equipment", color: "violet", icon: "🐗", rarity: "common" },
-  106000010: { zh: "巨人之拳", en: "Giant Gauntlet", type: "equipment", color: "violet", icon: "🧤", rarity: "epic" },
-  106000011: { zh: "嗜血胡须", en: "Vampstache", type: "equipment", color: "violet", icon: "🧔", rarity: "common" },
-  106000012: { zh: "急速药瓶", en: "Haste Vial", type: "equipment", color: "violet", icon: "💨", rarity: "common" },
-  106000013: { zh: "火箭矛", en: "Rocket Spear", type: "equipment", color: "violet", icon: "🚀", rarity: "epic" },
-  106000014: { zh: "尖刺铁球", en: "Spiky Ball", type: "equipment", color: "violet", icon: "🔮", rarity: "epic" },
-  106000015: { zh: "冰霜之箭", en: "Frozen Arrow", type: "equipment", color: "violet", icon: "🏹", rarity: "epic" },
-  106000016: { zh: "巨石之箭", en: "Monolith Arrow", type: "equipment", color: "violet", icon: "🏹", rarity: "epic" },
-  106000017: { zh: "巨箭", en: "Giant Arrow", type: "equipment", color: "violet", icon: "🏹", rarity: "common" },
-  106000019: { zh: "天使玩偶", en: "Healer Puppet", type: "equipment", color: "violet", icon: "😇", rarity: "common" },
-  106000020: { zh: "魔镜", en: "Magic Mirror", type: "equipment", color: "violet", icon: "🪞", rarity: "common" },
-  106000022: { zh: "魔法手套", en: "Magic Glove", type: "equipment", color: "violet", icon: "🧤", rarity: "common" },
-  106000024: { zh: "国王权杖", en: "King's Wand", type: "equipment", color: "violet", icon: "🪄", rarity: "epic" },
-  106000032: { zh: "女王之守护", en: "Queen's Ward", type: "equipment", color: "violet", icon: "👑", rarity: "epic" },
-  106000034: { zh: "守护者宝珠", en: "Warden's Orb", type: "equipment", color: "violet", icon: "🔮", rarity: "epic" },
+  106000008: { zh: "地震金靴", en: "Earthquake Boots", type: "equipment", color: "violet", icon: "🥾", rarity: "epic" },
+  106000009: { zh: "野猪骑士木偶", en: "Hog Rider Puppet", type: "equipment", color: "violet", icon: "🐗", rarity: "common" },
+  106000010: { zh: "巨型手套", en: "Giant Gauntlet", type: "equipment", color: "violet", icon: "🧤", rarity: "epic" },
+  106000011: { zh: "治疗胡须", en: "Vampstache", type: "equipment", color: "violet", icon: "🧔", rarity: "common" },
+  106000012: { zh: "急速药水瓶", en: "Haste Vial", type: "equipment", color: "violet", icon: "💨", rarity: "common" },
+  106000013: { zh: "火箭飞矛", en: "Rocket Spear", type: "equipment", color: "violet", icon: "🚀", rarity: "epic" },
+  106000014: { zh: "尖刺足球", en: "Spiky Ball", type: "equipment", color: "violet", icon: "🔮", rarity: "epic" },
+  106000015: { zh: "魔镜", en: "Magic Mirror", type: "equipment", color: "violet", icon: "🪞", rarity: "common" }, // 推断：女王已拥有的第 7 件；冰霜之箭实测未解锁
+  106000016: { zh: "擎天箭矢", en: "Monolith Arrow", type: "equipment", color: "violet", icon: "🏹", rarity: "epic" },
+  106000017: { zh: "巨型箭失", en: "Giant Arrow", type: "equipment", color: "violet", icon: "🏹", rarity: "common" },
+  106000019: { zh: "未知装备", en: "Unknown Equipment", type: "equipment", color: "violet", icon: "❓", rarity: "common" }, // 曾错标为天使木偶，实为 020；本 ID 名称待确认（用户 1 级拥有）
+  106000020: { zh: "天使木偶", en: "Healer Puppet", type: "equipment", color: "violet", icon: "😇", rarity: "common" },
+  106000022: { zh: "巨大火球", en: "Fireball", type: "equipment", color: "violet", icon: "🔥", rarity: "epic" },
+  106000024: { zh: "狂暴宝石", en: "Rage Gem", type: "equipment", color: "violet", icon: "💎", rarity: "epic" },
+  106000032: { zh: "灵蛇手镯", en: "Snake Bracelet", type: "equipment", color: "violet", icon: "🐍", rarity: "epic" },
+  106000034: { zh: "治疗书卷", en: "Healing Tome", type: "equipment", color: "violet", icon: "📖", rarity: "epic" },
   106000035: { zh: "冠军之冠", en: "Champion's Crown", type: "equipment", color: "violet", icon: "👑", rarity: "epic" },
   106000039: { zh: "野蛮人门徒", en: "Barbarian Disciple", type: "equipment", color: "violet", icon: "⚔️", rarity: "legendary" },
-  106000040: { zh: "弓箭刺客", en: "Archer Assassin", type: "equipment", color: "violet", icon: "🏹", rarity: "legendary" },
-  106000041: { zh: "守护者光环", en: "Warden's Aura", type: "equipment", color: "violet", icon: "✨", rarity: "legendary" },
-  106000042: { zh: "狂怒守护者", en: "Rageful Guardian", type: "equipment", color: "violet", icon: "🛡️", rarity: "legendary" },
-  106000043: { zh: "神圣守护者", en: "Sacred Protector", type: "equipment", color: "violet", icon: "🛡️", rarity: "legendary" },
-  106000044: { zh: "暗影长矛", en: "Shadow Spear", type: "equipment", color: "violet", icon: "🗡️", rarity: "legendary" },
-  106000047: { zh: "凤凰之环", en: "Phoenix Ring", type: "equipment", color: "violet", icon: "🔥", rarity: "legendary" },
-  106000048: { zh: "吸血药瓶", en: "Vampire Vial", type: "equipment", color: "violet", icon: "🧛", rarity: "legendary" },
+  106000040: { zh: "雷电战靴", en: "Electro Boots", type: "equipment", color: "violet", icon: "🥾", rarity: "epic" },
+  106000041: { zh: "熔岩气球玩偶", en: "Lavaloon Puppet", type: "equipment", color: "violet", icon: "🎈", rarity: "epic" },
+  106000042: { zh: "护卫玩偶", en: "Henchmen Puppet", type: "equipment", color: "violet", icon: "🧸", rarity: "epic" },
+  106000043: { zh: "暗黑魔球", en: "Dark Orb", type: "equipment", color: "violet", icon: "🔮", rarity: "epic" },
+  106000044: { zh: "铁甲短裤", en: "Metal Pants", type: "equipment", color: "violet", icon: "🩳", rarity: "epic" },
+  106000047: { zh: "贵族铁铃", en: "Noble Iron", type: "equipment", color: "violet", icon: "🔔", rarity: "epic" },
+  106000048: { zh: "动作人偶", en: "Action Figure", type: "equipment", color: "violet", icon: "🤖", rarity: "epic" },
   106000049: { zh: "骷髅钥匙", en: "Skeleton Key", type: "equipment", color: "violet", icon: "🗝️", rarity: "legendary" },
-  106000050: { zh: "霜寒守护", en: "Frost Guard", type: "equipment", color: "violet", icon: "❄️", rarity: "legendary" },
-  106000051: { zh: "毒药瓶", en: "Poison Flask", type: "equipment", color: "violet", icon: "☠️", rarity: "legendary" },
-  106000052: { zh: "地震之锤", en: "Earthquake Hammer", type: "equipment", color: "violet", icon: "🔨", rarity: "legendary" },
+  106000050: { zh: "冷冽水晶", en: "Frost Flake", type: "equipment", color: "violet", icon: "❄️", rarity: "epic" },
+  106000051: { zh: "木棍马狗", en: "Stick Horse", type: "equipment", color: "violet", icon: "🐴", rarity: "epic" },
+  106000052: { zh: "烈焰之心", en: "Fire Heart", type: "equipment", color: "violet", icon: "❤️", rarity: "epic" },
   106000053: { zh: "闪电护符", en: "Lightning Charm", type: "equipment", color: "violet", icon: "⚡", rarity: "legendary" },
-  106000057: { zh: "克隆之冠", en: "Clone Crown", type: "equipment", color: "violet", icon: "👑", rarity: "legendary" },
-  106000060: { zh: "风暴使者", en: "Storm Bringer", type: "equipment", color: "violet", icon: "🌩️", rarity: "legendary" },
+  // 2026-11-27 用户实导截图确认（此前未知）
+  106000056: { zh: "爆震器", en: "Stun Blaster", type: "equipment", color: "violet", icon: "💥", rarity: "epic" },
+  106000059: { zh: "雷电獠牙", en: "Electro Fangs", type: "equipment", color: "violet", icon: "⚡", rarity: "epic" },
+  106000061: { zh: "传送吊坠", en: "Portal Pendant", type: "equipment", color: "violet", icon: "🌀", rarity: "epic" },
+  106000057: { zh: "助燃器", en: "Flame Blower", type: "equipment", color: "violet", icon: "🔥", rarity: "epic" },
+  106000060: { zh: "反击卡组", en: "Revenge Deck", type: "equipment", color: "violet", icon: "🃏", rarity: "epic" },
 };
 
 // 兵种 units (4000xxx) — 中文名参考部落小工具 APK，ID 顺序按 COC 兵营解锁顺序
@@ -193,6 +220,12 @@ const UNIT_MAP: AssetMap = {
   4000095: { zh: "雷霆泰坦", en: "Electro Titan", type: "units", color: "cyan", icon: "👩" },
   4000097: { zh: "守护者学徒", en: "Apprentice Warden", type: "units", color: "cyan", icon: "🧙" },
   4000110: { zh: "根蔓骑士", en: "Root Rider", type: "units", color: "cyan", icon: "🌿" },
+  // TH19 新增兵种（游戏数据包 SC ID；中文名未核实，暂用英文；德鲁伊为直译）
+  4000132: { zh: "Thrower", en: "Thrower", type: "units", color: "cyan", icon: "🪃" },
+  4000177: { zh: "Meteor Golem", en: "Meteor Golem", type: "units", color: "cyan", icon: "☄️" },
+  4000123: { zh: "德鲁伊", en: "Druid", type: "units", color: "cyan", icon: "🌿" },
+  4000109: { zh: "Ruin Witch", en: "Ruin Witch", type: "units", color: "cyan", icon: "🧙" },
+  4000150: { zh: "Furnace", en: "Furnace", type: "units", color: "cyan", icon: "🔥" },
 };
 
 // 助力 helpers (124000xxx)
@@ -206,7 +239,7 @@ const HELPER_MAP: AssetMap = {
 // 陷阱 traps (12000xxx) — SC ID 来自用户实际 COC JSON 导出数据
 // 12000000=Bomb(TH2) / 12000001=SpringTrap(TH4) / 12000002=GiantBomb(TH6) /
 // 12000005=AirBomb(TH6) / 12000006=SeekingAirMine(TH7) / 12000008=SkeletonTrap(TH8) /
-// 12000016=TornadoTrap(TH11)
+// 12000016=TornadoTrap(TH11) / 12000020=GigaBomb(TH17)
 const TRAP_MAP: AssetMap = {
   12000000: { zh: "隐形炸弹", en: "Bomb", type: "traps", color: "red", icon: "💣" },
   12000001: { zh: "弹簧", en: "Spring Trap", type: "traps", color: "amber", icon: "🌀" },
@@ -215,6 +248,8 @@ const TRAP_MAP: AssetMap = {
   12000006: { zh: "黑雷", en: "Seeking Air Mine", type: "traps", color: "cyan", icon: "🎯" },
   12000008: { zh: "骷髅陷阱", en: "Skeleton Trap", type: "traps", color: "slate", icon: "💀" },
   12000016: { zh: "飓风陷阱", en: "Tornado Trap", type: "traps", color: "cyan", icon: "🌪️" },
+  // TH19：千兆炸弹（大本营武器陷阱，游戏数据包 SC ID；中文名未核实）
+  12000020: { zh: "Giga Bomb", en: "Giga Bomb", type: "traps", color: "red", icon: "💣" },
 };
 
 // 夜世界建筑 buildings2 (1000xxx, 1000033+) — 中文名参考部落小工具 APK
@@ -277,18 +312,27 @@ const UNIT2_MAP: AssetMap = {
 const SIEGE_MAP: AssetMap = {
   4000051: { zh: "攻城战车", en: "Wall Wrecker", type: "siege_machines", color: "zinc", icon: "🛻" },
   4000052: { zh: "攻城飞艇", en: "Battle Blimp", type: "siege_machines", color: "zinc", icon: "🛸" },
-  4000062: { zh: "攻城气球", en: "Stone Slammer", type: "siege_machines", color: "zinc", icon: "🪨" },
+  4000062: { zh: "攻城投石车", en: "Stone Slammer", type: "siege_machines", color: "zinc", icon: "🪨" },
   4000075: { zh: "战营", en: "Siege Barracks", type: "siege_machines", color: "zinc", icon: "⛺" },
   4000087: { zh: "滚木车", en: "Log Launcher", type: "siege_machines", color: "zinc", icon: "🪵" },
-  4000091: { zh: "投石车", en: "Log Launcher", type: "siege_machines", color: "zinc", icon: "🪨" },
-  4000092: { zh: "钻地机", en: "Drill", type: "siege_machines", color: "zinc", icon: "🚇" },
+  4000091: { zh: "喷火器", en: "Flame Flinger", type: "siege_machines", color: "zinc", icon: "🔥" },
+  4000092: { zh: "钻地机", en: "Battle Drill", type: "siege_machines", color: "zinc", icon: "🚇" },
   4000135: { zh: "部队发射器", en: "Troop Launcher", type: "siege_machines", color: "zinc", icon: "🚀" },
-  4000188: { zh: "空中部队发射器", en: "Air Troop Launcher", type: "siege_machines", color: "zinc", icon: "🛩️" },
+  4000188: { zh: "空中部队发射器", en: "Sky Wagon", type: "siege_machines", color: "zinc", icon: "🛩️" },
+};
+
+// 守卫 guardians (107000000+) — TH18 新增，游戏数据包 SC ID
+// 导出字段未确认：若导出 JSON 用 "guardians" 类别，走 GUARDIAN_MAP；
+// 若归入 "heroes"，HERO_MAP 里另有备用映射
+const GUARDIAN_MAP: AssetMap = {
+  107000000: { zh: "Longshot", en: "Longshot", type: "guardians", color: "yellow", icon: "🎯" },
+  107000001: { zh: "粉碎者", en: "Smasher", type: "guardians", color: "yellow", icon: "🔨" },
+  107000008: { zh: "Logger", en: "Logger", type: "guardians", color: "yellow", icon: "🪓" },
 };
 
 // ── 复合查找表 ───────────────────────────────
 export const ITEM_MAP: AssetMap = {
-  ...BUILDING_MAP, ...SPELL_MAP, ...HERO_MAP, ...PET_MAP, ...EQUIPMENT_MAP,
+  ...BUILDING_MAP, ...SPELL_MAP, ...HERO_MAP, ...GUARDIAN_MAP, ...PET_MAP, ...EQUIPMENT_MAP,
   ...UNIT_MAP, ...HELPER_MAP, ...BUILDING2_MAP, ...HERO2_MAP, ...UNIT2_MAP,
   ...SIEGE_MAP, ...TRAP_MAP,
 };
@@ -298,6 +342,7 @@ const BY_CATEGORY: Record<string, AssetMap> = {
   buildings: BUILDING_MAP,
   spells: SPELL_MAP,
   heroes: HERO_MAP,
+  guardians: GUARDIAN_MAP,
   pets: PET_MAP,
   equipment: EQUIPMENT_MAP,
   units: UNIT_MAP,
@@ -314,6 +359,7 @@ export const ITEM_CATEGORY_LABELS: Record<string, string> = {
   buildings: "建筑",
   spells: "法术",
   heroes: "英雄",
+  guardians: "守卫",
   pets: "宠物",
   equipment: "装备",
   units: "兵种",
@@ -331,6 +377,7 @@ export const CATEGORY_BG_COLORS: Record<string, string> = {
   buildings: "from-amber-900/20 to-amber-900/5",
   spells: "from-indigo-900/20 to-indigo-900/5",
   heroes: "from-yellow-600/20 to-yellow-600/5",
+  guardians: "from-yellow-600/20 to-yellow-600/5",
   pets: "from-emerald-900/20 to-emerald-900/5",
   equipment: "from-violet-900/20 to-violet-900/5",
   units: "from-cyan-900/20 to-cyan-900/5",
@@ -357,6 +404,8 @@ export function inferCategory(scId: number): string {
   if (scId >= 28000000 && scId < 29000000) return "heroes";
   if (scId >= 73000000 && scId < 74000000) return "pets";
   if (scId >= 106000000 && scId < 107000000) return "equipment";
+  if (scId >= 107000000 && scId < 108000000) return "guardians";
+  if (scId >= 12000000 && scId < 13000000) return "traps";
   if (scId >= 124000000 && scId < 125000000) return "helpers";
   if (scId >= 4000000 && scId < 5000000) return "units";
   return "unknown";

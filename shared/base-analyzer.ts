@@ -50,7 +50,7 @@ const STYLE_DESCRIPTIONS: Record<BaseStyle, string> = {
   offense_heavy: "进攻科技优先于防御。适合主动出击打资源，但防守薄弱易被平推，建议补强防空与核心防御。",
   defense_heavy: "防御等级高于进攻科技。基地防守扎实，但打资源乏力，建议优先升级实验室和常用兵种法术。",
   balanced: "进攻与防御均衡发展。基地整体健康，按优先级继续推进即可。",
-  maxer: "大部分建筑接近满级。基地发展成熟，可考虑升级大本营解锁新内容（18本即将到来）。",
+  maxer: "大部分建筑接近满级。基地发展成熟，可考虑升级大本营解锁新内容（19本已上线）。",
 };
 
 const CATEGORY_LABELS: Record<BuildCategory, string> = {
@@ -173,7 +173,11 @@ function generateSuggestions(
       suggestions.push("建议转向飞龙+闪震流派打资源，无需依赖高等级英雄。");
       break;
     case "maxer":
-      suggestions.push("基地接近满级，可考虑升级大本营（18本即将到来，含新建筑与等级上限提升）。");
+      if (th >= 19) {
+        suggestions.push("基地已接近当前版本满级（19本），可优先练小队技能与守卫神殿，等待后续版本更新。");
+      } else {
+        suggestions.push("基地接近满级，可考虑升级大本营（19本已上线，含小队系统、新防御与等级上限提升）。");
+      }
       break;
     case "balanced":
       suggestions.push("进攻与防御均衡，按优先级继续推进。建议优先升满实验室、部落城堡、英雄殿堂、铁匠铺。");

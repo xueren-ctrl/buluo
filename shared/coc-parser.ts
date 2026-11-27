@@ -16,7 +16,7 @@ import { log, warn, error, group, fmtDuration } from "./logger";
 
 const TIMER_CATEGORIES = [
   "buildings", "spells", "heroes", "pets", "equipment", "units",
-  "helpers",
+  "helpers", "guardians",
   "buildings2", "heroes2", "units2", "siege_machines",
   "traps", "traps2",
 ] as const;
