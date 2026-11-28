@@ -59,6 +59,8 @@ export interface HistoryRecord {
   category: string;
   item_level: number;
   completed_at: string;
+  /** 完成项的 SC ID（可选，用于去重时区分同名同级的不同建筑） */
+  data_id?: number | null;
 }
 
 export interface NotifyConfig {
@@ -267,7 +269,16 @@ export async function loadUserData(): Promise<UserRecord | undefined> {
 }
 
 // ── 历史记录 CRUD ───────────────────────────
+// v1.2.11 起正式启用：完成项写入（调度器 tick + 重新解析 diff），
+// 与 loadCompletionStats 合并统计。同一项（分类+SC ID/名+等级+完成时间）
+// 只记一次——调度器与重新解析两条写入路径可能先后命中同一项。
+export function historyKey(entry: Omit<HistoryRecord, "id">): string {
+  return `${entry.category}:${entry.data_id ?? entry.item_name}:${entry.item_level}:${entry.completed_at}`;
+}
+
 export async function addHistory(entry: Omit<HistoryRecord, "id">): Promise<void> {
+  const all = await getAll<HistoryRecord>(STORE_HISTORY);
+  if (all.some((h) => historyKey(h) === historyKey(entry))) return;
   const id = `${entry.category}-${entry.completed_at}-${Date.now()}`;
   await put(STORE_HISTORY, { ...entry, id } as unknown as Record<string, unknown>);
 }
@@ -484,19 +495,20 @@ export interface RestoredState {
   settings: SchedulerSettings;
   notifyConfig: NotifyConfig;
   village?: VillageRecord;
+  /** v1.2.11 起：完成记录参与恢复与备份（之前恒为空，见旧注释） */
+  history: HistoryRecord[];
 }
 
 export async function loadAll(): Promise<RestoredState> {
-  // 注意：history store 不参与备份——addHistory/loadHistory 全仓库无调用方，
-  // 该 store 恒为空；一旦以后启用历史功能，需把它加进导出与恢复。
-  const [upgrades, userData, settings, notifyConfig, village] = await Promise.all([
+  const [upgrades, userData, settings, notifyConfig, village, history] = await Promise.all([
     loadUpgrades(),
     loadUserData(),
     loadSettings(),
     loadNotifyConfig(),
     loadVillage(),
+    loadHistory(500),
   ]);
-  return { upgrades, userData, settings, notifyConfig, village };
+  return { upgrades, userData, settings, notifyConfig, village, history };
 }
 
 // ── 重置全部数据 ────────────────────────────
@@ -562,6 +574,8 @@ export interface ParsedBackup {
     notifyConfig: NotifyConfig;
     village?: VillageRecord;
   };
+  /** 完成记录（v1.2.11 起随 state 备份；旧版备份缺失时为空数组） */
+  history: HistoryRecord[];
   jsonHistory: Array<Omit<JsonHistoryRecord, "id">>;
   accounts: AccountRecord[];
   notifyState: NotifyStateRecord[];
@@ -571,6 +585,7 @@ export interface ParsedBackup {
 
 export interface RestoreCounts {
   upgrades: number;
+  history: number;
   jsonHistory: number;
   accounts: number;
   notifyState: number;
@@ -747,6 +762,43 @@ export function validateBackup(data: unknown): ParsedBackup {
       snapshot: snap as unknown as VillageRecord["snapshot"],
       capturedAt: snap.capturedAt as string,
     };
+  }
+
+  // ── history：完成记录（v1.2.11 起随 state 备份；旧版备份缺失 = 空）──
+  const history: HistoryRecord[] = [];
+  const rawHistory = rawState.history;
+  if (rawHistory !== undefined && rawHistory !== null) {
+    if (!Array.isArray(rawHistory)) {
+      throw new BackupValidationError("state.history 不是数组");
+    }
+    rawHistory.forEach((h, i) => {
+      if (!isPlainObject(h)) {
+        throw new BackupValidationError(`state.history[${i}] 不是对象`);
+      }
+      if (typeof h.item_name !== "string" || !h.item_name) {
+        throw new BackupValidationError(`state.history[${i}].item_name 非法`);
+      }
+      if (typeof h.category !== "string" || !h.category) {
+        throw new BackupValidationError(`state.history[${i}].category 非法`);
+      }
+      if (typeof h.item_level !== "number" || !Number.isFinite(h.item_level)) {
+        throw new BackupValidationError(`state.history[${i}].item_level 非法`);
+      }
+      if (!isValidDateString(h.completed_at)) {
+        throw new BackupValidationError(`state.history[${i}].completed_at 非法`);
+      }
+      if (h.data_id !== undefined && h.data_id !== null && typeof h.data_id !== "number") {
+        throw new BackupValidationError(`state.history[${i}].data_id 非法`);
+      }
+      history.push({
+        id: typeof h.id === "string" && h.id ? h.id : `${h.category}-${h.completed_at}-${Date.now()}-${i}`,
+        item_name: h.item_name as string,
+        category: h.category as string,
+        item_level: h.item_level as number,
+        completed_at: h.completed_at as string,
+        data_id: typeof h.data_id === "number" ? h.data_id : null,
+      });
+    });
   }
 
   // ── json_history ──
@@ -956,6 +1008,7 @@ export function validateBackup(data: unknown): ParsedBackup {
       notifyConfig,
       ...(village ? { village } : {}),
     },
+    history,
     jsonHistory,
     accounts,
     notifyState,
@@ -1017,6 +1070,9 @@ async function restoreInOneTx(b: ParsedBackup): Promise<void> {
         for (const n of b.notifyState) {
           await track(tx.objectStore(STORE_NOTIFY_STATE).put(n));
         }
+        for (const h of b.history) {
+          await track(tx.objectStore(STORE_HISTORY).put(h));
+        }
         // 直接 put，不走 addJsonHistory 的 5 条淘汰逻辑（恢复不应静默丢数据）
         for (const h of b.jsonHistory) {
           await track(tx.objectStore(STORE_JSON_HISTORY).put(h));
@@ -1041,6 +1097,7 @@ async function restoreInOneTx(b: ParsedBackup): Promise<void> {
 function countParsed(b: ParsedBackup): RestoreCounts {
   return {
     upgrades: b.state.upgrades.length,
+    history: b.history.length,
     jsonHistory: b.jsonHistory.length,
     accounts: b.accounts.length,
     notifyState: b.notifyState.length,

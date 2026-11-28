@@ -30,6 +30,7 @@ import {
   markTierNotified,
   clearNotifyState,
   addJsonHistory,
+  addHistory,
   upsertAccount,
   setActiveAccount,
   type RawUpgradeRecord,
@@ -37,6 +38,11 @@ import {
   type RestoredState,
   type AccountRecord,
 } from "@/lib/indexeddb";
+import {
+  loadCompletionStats,
+  findCompletions,
+  type CompletionStatsData,
+} from "@/lib/completion-stats";
 import { createScheduler, type Scheduler } from "@/lib/upgrade-scheduler";
 import { clearMonthlyCard } from "@/lib/monthly-card";
 import {
@@ -73,6 +79,7 @@ import { BaseAnalysisPanel } from "@/components/BaseAnalysisPanel";
 import { BaseScoreCard } from "@/components/BaseScoreCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
+import { CompletionStats } from "@/components/CompletionStats";
 import { MonthlyCardPanel } from "@/components/MonthlyCardPanel";
 import { Modal } from "@/components/Modal";
 
@@ -136,6 +143,7 @@ export default function HomePage() {
   const [clientId, setClientId] = useState("");
   const [loading, setLoading] = useState(false);
   const [upgrades, setUpgrades] = useState<UpgradeItem[]>([]);
+  const [completionStats, setCompletionStats] = useState<CompletionStatsData | null>(null);
   const [idleTimes, setIdleTimes] = useState<IdleTimes | null>(null);
   const [playerInfo, setPlayerInfo] = useState<PlayerInfo | null>(null);
   const [lastUploadAt, setLastUploadAt] = useState<string | null>(null);
@@ -181,7 +189,7 @@ export default function HomePage() {
       try {
         restored = await loadAll();
       } catch {
-        restored = { upgrades: [], userData: undefined, settings: (await loadSettings()) as SchedulerSettings, notifyConfig: { browserNotifEnabled: false } };
+        restored = { upgrades: [], userData: undefined, settings: (await loadSettings()) as SchedulerSettings, notifyConfig: { browserNotifEnabled: false }, history: [] };
       }
 
       if (cancelled) return;
@@ -456,6 +464,13 @@ export default function HomePage() {
     setStaleWarning(!!lastUploadAt && isDataStale(lastUploadAt));
   }, [lastUploadAt]);
 
+  // ── 完成统计：升级列表变化时刷新 ──
+  useEffect(() => {
+    loadCompletionStats()
+      .then(setCompletionStats)
+      .catch(() => {});
+  }, [upgrades]);
+
   // ── 设置变化 → 持久化 + 更新调度器 ──
   const updateSettings = useCallback(async (patch: Partial<SchedulerSettings>) => {
     setSettings((prev) => {
@@ -537,6 +552,8 @@ export default function HomePage() {
     try {
       const activeClientId = clientId || createLocalClientId();
       if (!clientId) setClientId(activeClientId);
+      // v1.2.11：记下解析前的旧列表，用于算出这次新完成的项
+      const prevUpgrades = upgrades;
       const res = await processJson(raw, activeClientId);
 
       await saveUserData({
@@ -602,6 +619,24 @@ export default function HomePage() {
         setActiveAccount(active || null);
       } catch (e) {
         console.warn("写入账号 store 失败", e);
+      }
+
+      // v1.2.11：把这次重新解析发现的已完成项记入完成记录（统计用；
+      // 调度器 tick 记的是 APP 打开期间完成的，两条路径由 addHistory 去重）
+      try {
+        const done = findCompletions(prevUpgrades, res.upgrades);
+        for (const u of done) {
+          await addHistory({
+            item_name: u.item_name,
+            category: u.category,
+            item_level: u.item_level,
+            completed_at: u.finish_time,
+            data_id: u.data_id ?? null,
+          });
+        }
+        setCompletionStats(await loadCompletionStats());
+      } catch (e) {
+        console.warn("写入完成记录失败", e);
       }
 
       const diff = res.diff;
@@ -731,6 +766,14 @@ export default function HomePage() {
         <div className="flex items-center justify-between gap-2 mb-4">
           <AccountSwitcher onAccountChange={(acc) => setActiveAccount(acc)} />
           <div className="flex items-center gap-1.5">
+            <Link
+              href="/accounts"
+              className="coc-btn-secondary !py-1.5 !px-3 text-xs flex items-center gap-1"
+              aria-label="多账号对比"
+            >
+              <span>👥</span>
+              <span className="hidden sm:inline">多账号</span>
+            </Link>
             <Link
               href="/history"
               className="coc-btn-secondary !py-1.5 !px-3 text-xs flex items-center gap-1"
@@ -871,6 +914,9 @@ export default function HomePage() {
 
             {/* 升级进行中 */}
             <UpgradeList items={filteredActive} />
+
+            {/* 完成统计 */}
+            <CompletionStats stats={completionStats} />
 
             {/* 最近完成 */}
             <CompletedList items={completedUpgrades} />
