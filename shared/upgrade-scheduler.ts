@@ -28,6 +28,7 @@ import {
   markTierNotified,
   loadSettings,
   saveSettings,
+  addHistory,
   type SchedulerSettings,
   type NotifyTier,
 } from "./indexeddb";
@@ -133,6 +134,22 @@ export async function createScheduler(): Promise<Scheduler> {
     await markTierNotified(key);
   }
 
+  // v1.2.11：升级完成时记入 history（完成统计用；addHistory 内去重，
+  // 与重新解析 diff 的写入路径互不重复）
+  async function logCompletion(u: UpgradeItem): Promise<void> {
+    try {
+      await addHistory({
+        item_name: u.item_name,
+        category: u.category,
+        item_level: u.item_level,
+        completed_at: u.finish_time,
+        data_id: u.data_id ?? null,
+      });
+    } catch {
+      // 统计写入失败不影响通知本身
+    }
+  }
+
   async function fireBatch(items: Array<{ u: UpgradeItem; tier: NotifyTier }>): Promise<void> {
     if (items.length === 1) {
       await fireOne(items[0].u, items[0].tier, "已完成");
@@ -196,6 +213,7 @@ export async function createScheduler(): Promise<Scheduler> {
           completeDue.push({ u, tier: def.tier });
         } else {
           await fireOne(u, def.tier, def.label);
+          if (def.tier === "complete") await logCompletion(u);
           firedAny = true;
         }
       }
@@ -203,6 +221,7 @@ export async function createScheduler(): Promise<Scheduler> {
 
     if (completeDue.length > 0) {
       await fireBatch(completeDue);
+      for (const i of completeDue) await logCompletion(i.u);
       firedAny = true;
     }
 
