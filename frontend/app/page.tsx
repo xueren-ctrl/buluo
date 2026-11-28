@@ -79,7 +79,6 @@ import { BaseAnalysisPanel } from "@/components/BaseAnalysisPanel";
 import { BaseScoreCard } from "@/components/BaseScoreCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
-import { ScheduleTimeline } from "@/components/ScheduleTimeline";
 import { CompletionStats } from "@/components/CompletionStats";
 import { MonthlyCardPanel } from "@/components/MonthlyCardPanel";
 import { Modal } from "@/components/Modal";
@@ -895,9 +894,6 @@ export default function HomePage() {
 
             {/* 工人 / 实验室 */}
             {idleTimes && <BuilderLabStatus idleTimes={idleTimes} />}
-
-            {/* 排期时间线 */}
-            <ScheduleTimeline items={activeUpgrades} />
 
             {/* 通知设置已移至「设置」页面，主页不再显示 */}
 
